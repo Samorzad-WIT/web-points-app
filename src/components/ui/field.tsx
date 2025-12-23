@@ -104,6 +104,7 @@ function FieldLabel({
   ...props
 }: React.ComponentProps<typeof Label>) {
   return (
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control -- This is a reusable component where htmlFor is passed via props
     <Label
       data-slot="field-label"
       className={cn(
@@ -162,7 +163,7 @@ function FieldSeparator({
       {...props}
     >
       <Separator className="absolute inset-0 top-1/2" />
-      {children ? (
+      {children !== undefined && children !== null ? (
         <span
           className="text-muted-foreground bg-background relative mx-auto block w-fit px-2"
           data-slot="field-separator-content"
@@ -182,12 +183,12 @@ function FieldError({
 }: React.ComponentProps<"div"> & {
   errors?: ({ message?: string } | undefined)[];
 }) {
-  const content = useMemo(async () => {
-    if (children) {
+  const content: React.ReactNode = useMemo((): React.ReactNode => {
+    if (children !== undefined && children !== null) {
       return children;
     }
 
-    if (!errors?.length) {
+    if (errors === undefined || errors.length === 0) {
       return null;
     }
 
@@ -195,21 +196,24 @@ function FieldError({
       ...new Map(errors.map((error) => [error?.message, error])).values(),
     ];
 
-    if (uniqueErrors?.length == 1) {
+    if (uniqueErrors.length === 1) {
       return uniqueErrors[0]?.message;
     }
 
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {uniqueErrors.map(
-          (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>,
+          (error) =>
+            typeof error?.message === "string" &&
+            error.message !== "" && (
+              <li key={error.message}>{error.message}</li>
+            ),
         )}
       </ul>
     );
   }, [children, errors]);
 
-  if (!content) {
+  if (content === undefined || content === null) {
     return null;
   }
 

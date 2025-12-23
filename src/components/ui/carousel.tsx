@@ -34,7 +34,7 @@ const CarouselContext = React.createContext<CarouselContextProps | null>(null);
 function useCarousel() {
   const context = React.useContext(CarouselContext);
 
-  if (!context) {
+  if (context === null) {
     throw new Error("useCarousel must be used within a <Carousel />");
   }
 
@@ -61,7 +61,7 @@ function Carousel({
   const [canScrollNext, setCanScrollNext] = React.useState(false);
 
   const onSelect = React.useCallback((api: CarouselApi) => {
-    if (!api) {
+    if (api === undefined) {
       return;
     }
     setCanScrollPrevious(api.canScrollPrev());
@@ -90,14 +90,15 @@ function Carousel({
   );
 
   React.useEffect(() => {
-    if (!api || !setApi) {
+    if (api === undefined || setApi === undefined) {
       return;
     }
+    // eslint-disable-next-line react-you-might-not-need-an-effect/no-pass-data-to-parent
     setApi(api);
   }, [api, setApi]);
 
   React.useEffect(() => {
-    if (!api) {
+    if (api === undefined) {
       return;
     }
     onSelect(api);
@@ -105,7 +106,7 @@ function Carousel({
     api.on("select", onSelect);
 
     return () => {
-      api?.off("select", onSelect);
+      api.off("select", onSelect);
     };
   }, [api, onSelect]);
 
@@ -115,8 +116,7 @@ function Carousel({
         carouselRef,
         api,
         opts,
-        orientation:
-          orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+        orientation,
         scrollPrev: scrollPrevious,
         scrollNext,
         canScrollPrev: canScrollPrevious,
