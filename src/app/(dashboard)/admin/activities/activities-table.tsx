@@ -1,6 +1,5 @@
 "use client";
 
-import type { ActivityType } from "@prisma/client";
 import { useForm } from "@tanstack/react-form";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Plus, Power, PowerOff, Trash2 } from "lucide-react";
@@ -55,6 +54,8 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+
+import type { ActivityType } from "../../../../generated/prisma/enums";
 
 interface Activity {
   id: string;

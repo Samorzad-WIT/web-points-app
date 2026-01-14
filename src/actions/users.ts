@@ -1,11 +1,12 @@
 "use server";
 
-import type { Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+import type { Role } from "../generated/prisma/enums";
 
 export async function getUsers() {
   const session = await auth.api.getSession({

@@ -1,6 +1,5 @@
 "use client";
 
-import type { Role } from "@prisma/client";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
@@ -42,6 +41,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
+
+import type { Role } from "../../../../generated/prisma/enums";
 
 interface User {
   id: string;
