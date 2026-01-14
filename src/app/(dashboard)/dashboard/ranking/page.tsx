@@ -21,6 +21,8 @@ import {
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function RankingPage() {
   const users = await prisma.user.findMany({
     where: { totalPoints: { gt: 0 } },
