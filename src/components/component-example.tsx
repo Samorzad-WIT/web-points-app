@@ -124,7 +124,7 @@ function CardExample() {
         </CardHeader>
         <CardFooter>
           <AlertDialog>
-            <AlertDialogTrigger render={<Button />}>
+            <AlertDialogTrigger nativeButton={false} render={<Button />}>
               <PlusIcon data-icon="inline-start" />
               Show Dialog
             </AlertDialogTrigger>
@@ -186,6 +186,7 @@ function FormExample() {
           <CardAction>
             <DropdownMenu>
               <DropdownMenuTrigger
+                nativeButton={false}
                 render={<Button variant="ghost" size="icon" />}
               >
                 <MoreVerticalIcon />
@@ -439,9 +440,19 @@ function FormExample() {
                   <FieldLabel htmlFor="small-form-role">Role</FieldLabel>
                   <Select items={roleItems} defaultValue={null}>
                     <SelectTrigger id="small-form-role">
-                      <SelectValue />
+                      <SelectValue>
+                        {(value: string) => {
+                          const role = roleItems.find(
+                            (item) => item.value === value,
+                          );
+                          if (role === undefined) {
+                            return "Select a role";
+                          }
+                          return role.label;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent align="start" alignItemWithTrigger={false}>
                       <SelectGroup>
                         {roleItems.map((item) => (
                           <SelectItem key={item.value} value={item.value}>

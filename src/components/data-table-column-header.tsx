@@ -34,6 +34,7 @@ export function DataTableColumnHeader<TData, TValue>({
     <div className={cn("flex items-center space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger
+          nativeButton={false}
           render={
             <Button
               variant="ghost"

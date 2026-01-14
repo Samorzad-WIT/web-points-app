@@ -4,6 +4,13 @@ import { redirect } from "next/navigation";
 
 import { getUsers } from "@/actions/users";
 import { DashboardHeader } from "@/components/dashboard-header";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 
 import { UsersTable } from "./users-table";
@@ -26,7 +33,17 @@ export default async function UsersPage() {
         text="Zarządzaj użytkownikami systemu i ich uprawnieniami"
         icon={Users}
       />
-      <UsersTable users={users} currentUserId={session.user.id} />
+      <Card>
+        <CardHeader>
+          <CardTitle>Wszyscy użytkownicy</CardTitle>
+          <CardDescription>
+            Łącznie {users.length} użytkowników w systemie
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UsersTable users={users} currentUserId={session.user.id} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

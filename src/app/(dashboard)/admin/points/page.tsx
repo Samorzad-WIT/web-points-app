@@ -4,6 +4,13 @@ import { redirect } from "next/navigation";
 
 import { getPointAssignments } from "@/actions/points";
 import { DashboardHeader } from "@/components/dashboard-header";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 
 import { PointsTable } from "./points-table";
@@ -26,7 +33,17 @@ export default async function AdminPointsPage() {
         text="Przeglądaj i zarządzaj wszystkimi przyznanymi punktami"
         icon={Award}
       />
-      <PointsTable assignments={assignments} />
+      <Card>
+        <CardHeader>
+          <CardTitle>Historia Punktów</CardTitle>
+          <CardDescription>
+            Łącznie {assignments.length} wpisów w historii
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PointsTable assignments={assignments} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

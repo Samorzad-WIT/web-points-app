@@ -1,7 +1,7 @@
 "use client";
 
-import { useForm } from "@tanstack/react-form";
-import { Award, ClipboardList, Info, Users } from "lucide-react";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { Award, ClipboardList, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -73,8 +73,9 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
       points: 0,
       notes: "",
     },
+    validationLogic: revalidateLogic(),
     validators: {
-      onChange: assignPointsSchema,
+      onDynamic: assignPointsSchema,
     },
     onSubmit: async ({ value }) => {
       try {
@@ -121,15 +122,15 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
             Wybierz użytkownika i aktywność, za którą chcesz przyznać punkty
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              void form.handleSubmit();
-            }}
-            className="space-y-6"
-          >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            void form.handleSubmit();
+          }}
+          className="space-y-6"
+        >
+          <CardContent className="space-y-4">
             <form.Field name="userId">
               {(field) => (
                 <Field>
@@ -146,9 +147,25 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>
+                        {(value: string) => {
+                          const user = users.find((u) => u.id === value);
+                          if (user == null) {
+                            return (
+                              <span className="text-muted-foreground">
+                                Wybierz użytkownika
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="flex items-center gap-2">
+                              {user.name ?? user.email}
+                            </span>
+                          );
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent align="start" alignItemWithTrigger={false}>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           <span className="flex items-center gap-2">
@@ -184,9 +201,23 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>
+                        {(value: string) => {
+                          const activity = activities.find(
+                            (a) => a.id === value,
+                          );
+                          if (activity === undefined) {
+                            return (
+                              <span className="text-muted-foreground">
+                                Wybierz aktywność
+                              </span>
+                            );
+                          }
+                          return <span>{activity.name}</span>;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent align="start" alignItemWithTrigger={false}>
                       {activities.map((activity) => (
                         <SelectItem key={activity.id} value={activity.id}>
                           <span className="flex items-center gap-2">
@@ -206,41 +237,6 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
               )}
             </form.Field>
 
-            {selectedActivity === null ? null : (
-              <div className="rounded-md bg-slate-50 p-4 dark:bg-slate-900/50">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-full bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                    <Info className="h-4 w-4" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Szczegóły aktywności</p>
-                    <p className="text-muted-foreground text-sm">
-                      Typ:{" "}
-                      <span className="text-foreground font-medium">
-                        {selectedActivity.type === "FIXED" ? "Stała" : "Zakres"}
-                      </span>
-                    </p>
-                    {selectedActivity.type === "FIXED" ? (
-                      <p className="text-muted-foreground text-sm">
-                        Wartość:{" "}
-                        <span className="text-foreground font-medium">
-                          {selectedActivity.fixedPoints ?? 0} pkt
-                        </span>
-                      </p>
-                    ) : (
-                      <p className="text-muted-foreground text-sm">
-                        Zakres:{" "}
-                        <span className="text-foreground font-medium">
-                          {selectedActivity.minPoints ?? 0} -{" "}
-                          {selectedActivity.maxPoints ?? 0} pkt
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
             <form.Field name="points">
               {(field) => (
                 <div className="space-y-2">
@@ -256,9 +252,20 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                       onChange={(event) => {
                         field.handleChange(event.target.valueAsNumber);
                       }}
-                      min={selectedActivity?.minPoints ?? 0}
-                      max={selectedActivity?.maxPoints ?? 0}
-                      disabled={selectedActivity === null}
+                      min={
+                        selectedActivity?.type === "RANGE"
+                          ? (selectedActivity.minPoints ?? 0)
+                          : undefined
+                      }
+                      max={
+                        selectedActivity?.type === "RANGE"
+                          ? (selectedActivity.maxPoints ?? 0)
+                          : undefined
+                      }
+                      disabled={
+                        selectedActivity === null ||
+                        selectedActivity.type === "FIXED"
+                      }
                       className={
                         selectedActivity?.type === "FIXED"
                           ? "cursor-not-allowed bg-slate-100 text-slate-500"
@@ -299,39 +306,38 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                 </Field>
               )}
             </form.Field>
-
-            <CardFooter className="flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => {
-                  router.back();
-                }}
-              >
-                Anuluj
-              </Button>
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-              >
-                {([canSubmit, isSubmitting]) => (
-                  <Button
-                    type="submit"
-                    disabled={!canSubmit || selectedActivity === null}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Spinner className="mr-2" />
-                        Okej, przyznaję...
-                      </>
-                    ) : (
-                      "Przyznaj punkty"
-                    )}
-                  </Button>
-                )}
-              </form.Subscribe>
-            </CardFooter>
-          </form>
-        </CardContent>
+          </CardContent>
+          <CardFooter className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => {
+                router.back();
+              }}
+            >
+              Anuluj
+            </Button>
+            <form.Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
+            >
+              {([_canSubmit, isSubmitting]) => (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || selectedActivity === null}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Spinner className="mr-2" />
+                      Okej, przyznaję...
+                    </>
+                  ) : (
+                    "Przyznaj punkty"
+                  )}
+                </Button>
+              )}
+            </form.Subscribe>
+          </CardFooter>
+        </form>
       </Card>
 
       <Card>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { AlertCircle, CheckCircle2, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -51,8 +51,9 @@ export default function RegisterPage() {
       password: "",
       confirmPassword: "",
     },
+    validationLogic: revalidateLogic(),
     validators: {
-      onChange: registerSchema,
+      onDynamic: registerSchema,
     },
     onSubmit: async ({ value }) => {
       setError(null);
@@ -220,11 +221,11 @@ export default function RegisterPage() {
               <form.Subscribe
                 selector={(state) => [state.canSubmit, state.isSubmitting]}
               >
-                {([canSubmit, isSubmitting]) => (
+                {([_canSubmit, isSubmitting]) => (
                   <Button
                     type="submit"
                     className="from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 w-full bg-gradient-to-r font-semibold shadow-lg transition-all hover:shadow-xl"
-                    disabled={!canSubmit}
+                    disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <>

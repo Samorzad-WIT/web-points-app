@@ -101,6 +101,7 @@ export function DataTable<TData, TValue>({
         )}
         <DropdownMenu>
           <DropdownMenuTrigger
+            nativeButton={false}
             render={
               <Button variant="outline" className="ml-auto">
                 Widok kolumn <ChevronDown className="ml-2 size-4" />
@@ -198,7 +199,11 @@ export function DataTable<TData, TValue>({
               <SelectTrigger className="h-8 w-[70px]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent side="top">
+              <SelectContent
+                side="top"
+                align="start"
+                alignItemWithTrigger={false}
+              >
                 {[5, 10, 20, 30, 40, 50].map((pageSize) => (
                   <SelectItem key={pageSize} value={String(pageSize)}>
                     {String(pageSize)} na stronę

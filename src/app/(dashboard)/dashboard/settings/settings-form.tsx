@@ -1,11 +1,12 @@
 "use client";
 
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { Lock, Save, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { changePassword, updateProfile } from "@/actions/profile";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +19,6 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { authClient } from "@/lib/auth-client";
 
 interface SettingsFormProps {
   user: {
@@ -51,22 +51,21 @@ export function SettingsForm({ user }: SettingsFormProps) {
     defaultValues: {
       name: user.name ?? "",
     },
+    validationLogic: revalidateLogic(),
     validators: {
-      onChange: profileSchema,
+      onDynamic: profileSchema,
     },
     onSubmit: async ({ value }) => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-        const { error } = await (authClient as any).user.update({
+        const result = await updateProfile({
           name: value.name,
         });
 
-        if (error === null) {
+        if (result.error === undefined) {
           toast.success("Profil zaktualizowany");
           router.refresh();
         } else {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-          toast.error(error.message ?? "Błąd aktualizacji profilu");
+          toast.error(result.error);
         }
       } catch {
         toast.error("Wystąpił błąd");
@@ -80,24 +79,22 @@ export function SettingsForm({ user }: SettingsFormProps) {
       newPassword: "",
       confirmPassword: "",
     },
+    validationLogic: revalidateLogic(),
     validators: {
-      onChange: passwordSchema,
+      onDynamic: passwordSchema,
     },
     onSubmit: async ({ value }) => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-        const { error } = await (authClient as any).changePassword({
-          newPassword: value.newPassword,
+        const result = await changePassword({
           currentPassword: value.currentPassword,
-          revokeOtherSessions: true,
+          newPassword: value.newPassword,
         });
 
-        if (error === null) {
+        if (result.error === undefined) {
           toast.success("Hasło zostało zmienione");
           passwordForm.reset();
         } else {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-          toast.error(error.message ?? "Błąd zmiany hasła");
+          toast.error(result.error);
         }
       } catch {
         toast.error("Wystąpił błąd");
@@ -156,8 +153,8 @@ export function SettingsForm({ user }: SettingsFormProps) {
             <profileForm.Subscribe
               selector={(state) => [state.canSubmit, state.isSubmitting]}
             >
-              {([canSubmit, isSubmitting]) => (
-                <Button type="submit" disabled={!canSubmit}>
+              {([_canSubmit, isSubmitting]) => (
+                <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <Spinner className="mr-2" />

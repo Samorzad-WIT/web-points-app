@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -41,8 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
-
-import type { Role } from "../../../../generated/prisma/enums";
+import type { Role } from "@/generated/prisma/enums";
 
 interface User {
   id: string;
@@ -115,7 +115,18 @@ export function UsersTable({
         return (
           <div className="flex items-center gap-3">
             <Avatar className="size-8">
-              <AvatarFallback>{user.email[0].toUpperCase()}</AvatarFallback>
+              <AvatarFallback>
+                {(() => {
+                  if (user.name != null) {
+                    const parts = user.name.split(" ");
+                    if (parts.length >= 2) {
+                      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+                    }
+                    return user.name.slice(0, 2).toUpperCase();
+                  }
+                  return user.email.slice(0, 2).toUpperCase();
+                })()}
+              </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
               <span className="font-medium">{user.name ?? "Brak nazwy"}</span>
@@ -184,6 +195,7 @@ export function UsersTable({
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
+              nativeButton={false}
               render={
                 <Button
                   variant="ghost"
@@ -198,52 +210,56 @@ export function UsersTable({
                 </Button>
               }
             />
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Akcje</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Shield className="mr-2 size-4" />
-                  Zmień rolę
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem
-                    onClick={async () => handleRoleChange(user.id, "USER")}
-                    disabled={user.role === "USER"}
-                  >
-                    <UserIcon className="mr-2 size-4" />
-                    Użytkownik
-                    {user.role === "USER" && " (Obecna)"}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => handleRoleChange(user.id, "MODERATOR")}
-                    disabled={user.role === "MODERATOR"}
-                  >
-                    <GraduationCap className="mr-2 size-4" />
-                    Moderator
-                    {user.role === "MODERATOR" && " (Obecna)"}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => handleRoleChange(user.id, "ADMIN")}
-                    disabled={user.role === "ADMIN"}
-                  >
+            <DropdownMenuContent align="end" className="w-full">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Akcje</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
                     <Shield className="mr-2 size-4" />
-                    Admin
-                    {user.role === "ADMIN" && " (Obecna)"}
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-red-600 focus:text-red-600"
-                onClick={() => {
-                  setUserToDelete(user);
-                }}
-                disabled={isCurrent}
-              >
-                <Trash className="mr-2 size-4" />
-                Usuń użytkownika
-              </DropdownMenuItem>
+                    Zmień rolę
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onClick={async () => handleRoleChange(user.id, "USER")}
+                      disabled={user.role === "USER"}
+                    >
+                      <UserIcon className="mr-2 size-4" />
+                      Użytkownik
+                      {user.role === "USER" && " (Obecna)"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () =>
+                        handleRoleChange(user.id, "MODERATOR")
+                      }
+                      disabled={user.role === "MODERATOR"}
+                    >
+                      <GraduationCap className="mr-2 size-4" />
+                      Moderator
+                      {user.role === "MODERATOR" && " (Obecna)"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () => handleRoleChange(user.id, "ADMIN")}
+                      disabled={user.role === "ADMIN"}
+                    >
+                      <Shield className="mr-2 size-4" />
+                      Admin
+                      {user.role === "ADMIN" && " (Obecna)"}
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600"
+                  onClick={() => {
+                    setUserToDelete(user);
+                  }}
+                  disabled={isCurrent}
+                >
+                  <Trash className="mr-2 size-4" />
+                  Usuń użytkownika
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         );

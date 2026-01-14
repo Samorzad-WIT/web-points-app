@@ -168,6 +168,7 @@ export function PointsTable({ assignments }: PointsTableProps) {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
+              nativeButton={false}
               render={
                 <Button
                   variant="ghost"

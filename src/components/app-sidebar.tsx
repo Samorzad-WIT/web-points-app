@@ -181,7 +181,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <SidebarMenuButton className="w-full">
+                  <SidebarMenuButton
+                    size="lg"
+                    className="data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground group w-full"
+                  >
                     <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarImage
                         src={session?.user.image ?? ""}
@@ -199,11 +202,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         {session?.user.email ?? ""}
                       </span>
                     </div>
-                    <ChevronDown className="ml-auto size-4" />
+                    <ChevronDown className="ml-auto size-4 transition-transform duration-200 group-data-popup-open:rotate-180" />
                   </SidebarMenuButton>
                 }
               />
-              <DropdownMenuContent side="top" className="w-56">
+              <DropdownMenuContent
+                className="w-(--anchor-width) min-w-56 rounded-lg"
+                side="top"
+                sideOffset={4}
+              >
                 <DropdownMenuItem
                   render={
                     <Link href="/dashboard/settings">
