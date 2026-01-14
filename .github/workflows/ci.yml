@@ -42,3 +42,5 @@ jobs:
       - name: Build
         run: npm run build
         if: always()
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/web-points-app"
