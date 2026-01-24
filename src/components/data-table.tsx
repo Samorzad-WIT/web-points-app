@@ -101,7 +101,6 @@ export function DataTable<TData, TValue>({
         )}
         <DropdownMenu>
           <DropdownMenuTrigger
-            nativeButton={false}
             render={
               <Button variant="outline" className="ml-auto">
                 Widok kolumn <ChevronDown className="ml-2 size-4" />

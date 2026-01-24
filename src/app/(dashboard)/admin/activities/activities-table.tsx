@@ -224,7 +224,6 @@ export function CreateActivityDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
-        nativeButton={false}
         render={
           <Button>
             <Plus className="mr-2 size-4" />
@@ -420,7 +419,6 @@ function ActivityActions({ activity }: { activity: Activity }) {
       <div className="flex justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger
-            nativeButton={false}
             render={
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Otwórz menu</span>
@@ -464,7 +462,6 @@ function ActivityActions({ activity }: { activity: Activity }) {
             </DropdownMenuItem>
             <AlertDialog>
               <AlertDialogTrigger
-                nativeButton={false}
                 render={
                   <DropdownMenuItem
                     onSelect={(event) => {

@@ -124,7 +124,7 @@ function CardExample() {
         </CardHeader>
         <CardFooter>
           <AlertDialog>
-            <AlertDialogTrigger nativeButton={false} render={<Button />}>
+            <AlertDialogTrigger render={<Button />}>
               <PlusIcon data-icon="inline-start" />
               Show Dialog
             </AlertDialogTrigger>
@@ -186,7 +186,6 @@ function FormExample() {
           <CardAction>
             <DropdownMenu>
               <DropdownMenuTrigger
-                nativeButton={false}
                 render={<Button variant="ghost" size="icon" />}
               >
                 <MoreVerticalIcon />

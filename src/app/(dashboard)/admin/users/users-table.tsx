@@ -195,7 +195,6 @@ export function UsersTable({
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
-              nativeButton={false}
               render={
                 <Button
                   variant="ghost"
