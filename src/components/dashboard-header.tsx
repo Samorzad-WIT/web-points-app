@@ -15,9 +15,9 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
+      <div className="flex items-start gap-3 md:items-center">
         {Icon !== undefined && (
-          <div className="bg-primary/10 flex size-12 items-center justify-center rounded-lg">
+          <div className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-lg">
             <Icon className="text-primary size-6" />
           </div>
         )}

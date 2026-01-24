@@ -1,4 +1,4 @@
-import { Medal, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
+
+import { PodiumPlace } from "./components/podium-place";
 
 export const dynamic = "force-dynamic";
 
@@ -48,84 +50,23 @@ export default async function RankingPage() {
         icon={Trophy}
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 py-8 md:flex md:h-96 md:flex-row md:items-end md:justify-center">
         {[1, 0, 2].map((index) => {
           const user = topThree[index];
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (user == null) {
-            return <div key={index} />;
-          }
-
-          const position = index === 1 ? 1 : index === 0 ? 2 : 3;
-          const height =
-            position === 1 ? "h-40" : position === 2 ? "h-32" : "h-24";
-          const bgColor =
-            position === 1
-              ? "from-yellow-500/20 to-yellow-600/10 border-yellow-500/30"
-              : position === 2
-                ? "from-gray-400/20 to-gray-500/10 border-gray-400/30"
-                : "from-orange-500/20 to-orange-600/10 border-orange-500/30";
-          const iconColor =
-            position === 1
-              ? "text-yellow-500"
-              : position === 2
-                ? "text-gray-400"
-                : "text-orange-500";
+          const position = index === 1 ? 2 : index === 0 ? 1 : 3;
 
           return (
-            <Card
-              key={user.id}
+            <div
+              key={index}
               className={cn(
-                "relative overflow-hidden bg-gradient-to-b",
-                bgColor,
+                "flex justify-center md:flex-1",
+                index === 0
+                  ? "order-1 col-span-2 md:order-none"
+                  : "order-2 col-span-1 md:order-none",
               )}
             >
-              <CardContent className="mt-auto flex flex-col items-center justify-center pt-6">
-                <div className="absolute top-0 right-4 mt-2">
-                  {position === 1 ? (
-                    <Trophy className={cn("size-8", iconColor)} />
-                  ) : (
-                    <Medal className={cn("size-6", iconColor)} />
-                  )}
-                </div>
-                <Avatar
-                  className={cn(
-                    position === 1 ? "size-20" : "size-16",
-                    "border-2",
-                  )}
-                >
-                  <AvatarFallback className="text-xl font-bold">
-                    {user.name
-                      ?.split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase() ?? user.email[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="mt-4 text-center">
-                  <p
-                    className={cn(
-                      "font-bold",
-                      position === 1 ? "text-xl" : "text-lg",
-                    )}
-                  >
-                    {user.name ?? user.email}
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    {user._count.pointsReceived} aktywności
-                  </p>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className={cn("mt-3", position === 1 && "px-4 py-1 text-lg")}
-                >
-                  {user.totalPoints} pkt
-                </Badge>
-                <div
-                  className={cn("bg-muted/30 mt-4 w-full rounded-t-lg", height)}
-                />
-              </CardContent>
-            </Card>
+              <PodiumPlace user={user} position={position} />
+            </div>
           );
         })}
       </div>
