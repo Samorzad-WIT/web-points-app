@@ -56,7 +56,12 @@ export default async function ModeratorUsersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <UsersTable users={users} currentUserId={session.user.id} readonly />
+          <UsersTable
+            users={users}
+            currentUserId={session.user.id}
+            currentUserRole={role}
+            readonly
+          />
         </CardContent>
       </Card>
     </div>

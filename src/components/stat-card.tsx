@@ -28,7 +28,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "bg-card relative overflow-hidden rounded-xl border p-6 shadow-sm transition-all hover:shadow-md",
+        "bg-card relative overflow-hidden rounded-xl border p-6 shadow-sm",
         className,
       )}
     >
@@ -60,7 +60,7 @@ export function StatCard({
         )}
       </div>
       {children}
-      <div className="bg-primary/5 absolute -right-6 -bottom-6 size-24 rounded-full" />
+      <div className="bg-primary/5 absolute -right-8 -bottom-8 size-24 rounded-full" />
     </div>
   );
 }

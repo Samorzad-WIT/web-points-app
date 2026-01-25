@@ -129,7 +129,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                 disabled
                 className="bg-muted"
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                onChange={() => {}} // Read-only
+                onChange={() => {}}
               />
             </div>
 

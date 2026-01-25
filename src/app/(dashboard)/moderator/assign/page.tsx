@@ -22,7 +22,6 @@ export default async function AssignPointsPage() {
     redirect("/dashboard");
   }
 
-  // Fetch users (excluding the current moderator)
   const users = await prisma.user.findMany({
     where: {
       id: { not: session.user.id },
@@ -36,7 +35,6 @@ export default async function AssignPointsPage() {
     },
   });
 
-  // Fetch active activities
   const activities = await prisma.activity.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },

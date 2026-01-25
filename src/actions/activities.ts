@@ -111,6 +111,31 @@ export async function updateActivity(
   return { success: true };
 }
 
+export async function getActivity(id: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session?.user.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const activity = await prisma.activity.findUnique({
+    where: { id },
+    include: {
+      _count: {
+        select: { assignments: true },
+      },
+    },
+  });
+
+  if (activity === null) {
+    return { error: "Activity not found" };
+  }
+
+  return { activity };
+}
+
 export async function toggleActivity(id: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -143,7 +168,6 @@ export async function deleteActivity(id: string) {
     return { error: "Brak uprawnień" };
   }
 
-  // Check if activity has assignments
   const assignmentsCount = await prisma.pointAssignment.count({
     where: { activityId: id },
   });

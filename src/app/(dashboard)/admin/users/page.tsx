@@ -20,7 +20,7 @@ export default async function UsersPage() {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "ADMIN" && session?.user.role !== "MODERATOR") {
     redirect("/dashboard");
   }
 
@@ -41,7 +41,11 @@ export default async function UsersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <UsersTable users={users} currentUserId={session.user.id} />
+          <UsersTable
+            users={users}
+            currentUserId={session.user.id}
+            currentUserRole={session.user.role}
+          />
         </CardContent>
       </Card>
     </div>

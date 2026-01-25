@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 
 import { DataTable } from "@/components/data-table";
-import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 
 interface PointAssignment {
@@ -25,27 +24,21 @@ interface PointAssignment {
 export const columns: ColumnDef<PointAssignment>[] = [
   {
     accessorKey: "activity.name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Aktywność" />
-    ),
+    header: "Aktywność",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.activity.name}</span>
     ),
   },
   {
     accessorKey: "points",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Punkty" />
-    ),
+    header: "Punkty",
     cell: ({ row }) => (
       <Badge variant="secondary">+{row.original.points}</Badge>
     ),
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Data" />
-    ),
+    header: "Data",
     cell: ({ row }) => (
       <span className="text-muted-foreground text-sm">
         {format(row.original.createdAt, "d MMM yyyy, HH:mm", { locale: pl })}
@@ -54,9 +47,7 @@ export const columns: ColumnDef<PointAssignment>[] = [
   },
   {
     accessorKey: "assignedBy",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Przyznał" />
-    ),
+    header: "Przyznał",
     cell: ({ row }) => {
       const assigner = row.original.assignedBy;
       return (
@@ -68,9 +59,7 @@ export const columns: ColumnDef<PointAssignment>[] = [
   },
   {
     accessorKey: "notes",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Notatki" />
-    ),
+    header: "Notatki",
     cell: ({ row }) => {
       const notes = row.original.notes;
       if (notes === null) {

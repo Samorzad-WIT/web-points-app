@@ -1,6 +1,7 @@
 import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/navigation-menu";
 import { cva } from "class-variance-authority";
 import { ChevronDownIcon } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -24,34 +25,34 @@ function NavigationMenu({
   );
 }
 
-function NavigationMenuList({
-  className,
-  ...props
-}: NavigationMenuPrimitive.List.Props) {
-  return (
-    <NavigationMenuPrimitive.List
-      data-slot="navigation-menu-list"
-      className={cn(
-        "group flex flex-1 list-none items-center justify-center gap-0",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+const NavigationMenuList = React.forwardRef<
+  React.ElementRef<typeof NavigationMenuPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>
+>(({ className, ...props }, ref) => (
+  <NavigationMenuPrimitive.List
+    ref={ref}
+    data-slot="navigation-menu-list"
+    className={cn(
+      "group flex flex-1 list-none items-center justify-center gap-0",
+      className,
+    )}
+    {...props}
+  />
+));
+NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName;
 
-function NavigationMenuItem({
-  className,
-  ...props
-}: NavigationMenuPrimitive.Item.Props) {
-  return (
-    <NavigationMenuPrimitive.Item
-      data-slot="navigation-menu-item"
-      className={cn("relative", className)}
-      {...props}
-    />
-  );
-}
+const NavigationMenuItem = React.forwardRef<
+  React.ElementRef<typeof NavigationMenuPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Item>
+>(({ className, ...props }, ref) => (
+  <NavigationMenuPrimitive.Item
+    ref={ref}
+    data-slot="navigation-menu-item"
+    className={cn("relative", className)}
+    {...props}
+  />
+));
+NavigationMenuItem.displayName = NavigationMenuPrimitive.Item.displayName;
 
 const navigationMenuTriggerStyle = cva(
   "bg-background hover:bg-muted focus:bg-muted data-open:hover:bg-muted data-open:focus:bg-muted data-open:bg-muted/50 focus-visible:ring-ring/50 data-popup-open:bg-muted/50 data-popup-open:hover:bg-muted rounded-md px-4 py-2 text-sm font-medium transition-all focus-visible:ring-[3px] focus-visible:outline-1 disabled:opacity-50 group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center disabled:pointer-events-none outline-none",
@@ -138,23 +139,23 @@ function NavigationMenuLink({
   );
 }
 
-function NavigationMenuIndicator({
-  className,
-  ...props
-}: NavigationMenuPrimitive.Icon.Props) {
-  return (
-    <NavigationMenuPrimitive.Icon
-      data-slot="navigation-menu-indicator"
-      className={cn(
-        "data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden",
-        className,
-      )}
-      {...props}
-    >
-      <div className="bg-border relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm shadow-md" />
-    </NavigationMenuPrimitive.Icon>
-  );
-}
+const NavigationMenuIndicator = React.forwardRef<
+  React.ElementRef<typeof NavigationMenuPrimitive.Icon>,
+  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Icon>
+>(({ className, ...props }, ref) => (
+  <NavigationMenuPrimitive.Icon
+    ref={ref}
+    data-slot="navigation-menu-indicator"
+    className={cn(
+      "data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden",
+      className,
+    )}
+    {...props}
+  >
+    <div className="bg-border relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm shadow-md" />
+  </NavigationMenuPrimitive.Icon>
+));
+NavigationMenuIndicator.displayName = NavigationMenuPrimitive.Icon.displayName;
 
 export {
   NavigationMenu,

@@ -83,7 +83,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
         {searchKey === undefined ? null : (
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -101,11 +101,11 @@ export function DataTable<TData, TValue>({
         )}
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={
-              <Button variant="outline" className="ml-auto">
+            render={(props) => (
+              <Button {...props} variant="outline" className="ml-auto">
                 Widok kolumn <ChevronDown className="ml-2 size-4" />
               </Button>
-            }
+            )}
           />
           <DropdownMenuContent align="end">
             {table
@@ -121,7 +121,6 @@ export function DataTable<TData, TValue>({
                       column.toggleVisibility(value);
                     }}
                   >
-                    {/* Fallback to column ID if header is not string - ideally use ID map */}
                     {typeof column.columnDef.header === "string"
                       ? column.columnDef.header
                       : column.id}
@@ -181,14 +180,16 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between px-2">
-        <div className="text-muted-foreground flex-1 text-sm">
+      <div className="flex flex-col items-center justify-between gap-4 py-4 sm:flex-row">
+        <div className="text-muted-foreground hidden flex-1 text-sm whitespace-nowrap sm:block">
           {table.getFilteredSelectedRowModel().rows.length} z{" "}
           {table.getFilteredRowModel().rows.length} wierszy wybranych.
         </div>
-        <div className="flex items-center space-x-6 lg:space-x-8">
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
           <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Wierszy na stronę</p>
+            <p className="hidden text-sm font-medium sm:block">
+              Wierszy na stronę
+            </p>
             <Select
               value={String(table.getState().pagination.pageSize)}
               onValueChange={(value) => {
@@ -198,14 +199,10 @@ export function DataTable<TData, TValue>({
               <SelectTrigger className="h-8 w-[70px]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent
-                side="top"
-                align="start"
-                alignItemWithTrigger={false}
-              >
+              <SelectContent side="top">
                 {[5, 10, 20, 30, 40, 50].map((pageSize) => (
                   <SelectItem key={pageSize} value={String(pageSize)}>
-                    {String(pageSize)} na stronę
+                    {String(pageSize)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -216,6 +213,18 @@ export function DataTable<TData, TValue>({
             {String(table.getPageCount())}
           </div>
           <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              className="hidden size-8 p-0 lg:flex"
+              onClick={() => {
+                table.setPageIndex(0);
+              }}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <span className="sr-only">Pierwsza strona</span>
+              <ChevronLeft className="size-4" />
+              <ChevronLeft className="size-4" />
+            </Button>
             <Button
               variant="outline"
               className="size-8 p-0"
@@ -236,6 +245,18 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanNextPage()}
             >
               <span className="sr-only">Następna strona</span>
+              <ChevronRight className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className="hidden size-8 p-0 lg:flex"
+              onClick={() => {
+                table.setPageIndex(table.getPageCount() - 1);
+              }}
+              disabled={!table.getCanNextPage()}
+            >
+              <span className="sr-only">Ostatnia strona</span>
+              <ChevronRight className="size-4" />
               <ChevronRight className="size-4" />
             </Button>
           </div>

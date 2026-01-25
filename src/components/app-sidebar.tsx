@@ -2,6 +2,7 @@
 
 import {
   Award,
+  ChartPie,
   ChevronDown,
   ClipboardList,
   History,
@@ -54,6 +55,7 @@ const moderatorNavItems = [
   { title: "Przydziel punkty", url: "/moderator/assign", icon: Award },
   { title: "Użytkownicy", url: "/moderator/users", icon: Users },
   { title: "Aktywności", url: "/moderator/activities", icon: ClipboardList },
+  { title: "Statystyki", url: "/statistics", icon: ChartPie },
 ];
 
 const adminNavItems = [
@@ -180,8 +182,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={
+                render={(triggerProps) => (
                   <SidebarMenuButton
+                    {...triggerProps}
                     size="lg"
                     className="data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground group w-full"
                   >
@@ -204,7 +207,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </div>
                     <ChevronDown className="ml-auto size-4 transition-transform duration-200 group-data-popup-open:rotate-180" />
                   </SidebarMenuButton>
-                }
+                )}
               />
               <DropdownMenuContent
                 className="w-(--anchor-width) min-w-56 rounded-lg"
@@ -212,12 +215,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 sideOffset={4}
               >
                 <DropdownMenuItem
-                  render={
-                    <Link href="/dashboard/settings">
+                  render={(itemProps) => (
+                    <Link {...itemProps} href="/dashboard/settings">
                       <Settings className="mr-2 size-4" />
                       Ustawienia
                     </Link>
-                  }
+                  )}
                 />
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>

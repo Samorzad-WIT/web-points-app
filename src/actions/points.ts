@@ -44,6 +44,84 @@ export async function getPointAssignments() {
   return { assignments };
 }
 
+export async function getUserPointAssignments(userId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session?.user.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const assignments = await prisma.pointAssignment.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      activity: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      assignedBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return { assignments };
+}
+
+export async function getActivityPointAssignments(activityId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session?.user.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const assignments = await prisma.pointAssignment.findMany({
+    where: { activityId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      activity: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      assignedBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return { assignments };
+}
+
 export async function deletePointAssignment(assignmentId: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -62,7 +140,6 @@ export async function deletePointAssignment(assignmentId: string) {
       return { error: "Assignment not found" };
     }
 
-    // Decrement user's total points
     await prisma.user.update({
       where: { id: assignment.userId },
       data: {

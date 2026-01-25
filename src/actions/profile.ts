@@ -25,25 +25,17 @@ export async function updateProfile(data: z.infer<typeof profileSchema>) {
   }
 
   try {
-    const result = await auth.api.updateUser({
+    await auth.api.updateUser({
       headers: await headers(),
       body: {
         name: validated.data.name,
       },
     });
 
-    if (!result.status) {
-      // better-auth might return status property or throw?
-      // Actually better-auth api client usually returns the response data or throws on error?
-      // Let's assume it works or throws.
-      // But better-auth server functions usually return just the data.
-    }
-
     revalidatePath("/dashboard/settings");
-    revalidatePath("/dashboard"); // Sidebar name update
+    revalidatePath("/dashboard");
     return { success: true };
   } catch {
-    // safe error handling
     return { error: "Nie udało się zaktualizować profilu" };
   }
 }
@@ -79,7 +71,6 @@ export async function changePassword(data: z.infer<typeof passwordSchema>) {
     return { success: true };
   } catch (error) {
     if (error instanceof Error) {
-      // better-auth throws APIError usually
       return { error: error.message };
     }
     return { error: "Nie udało się zmienić hasła" };

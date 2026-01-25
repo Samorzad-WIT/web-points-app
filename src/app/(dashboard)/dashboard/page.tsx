@@ -37,7 +37,6 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
 
-  // Fetch user data with points
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -56,7 +55,6 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Calculate stats
   const totalAssignments = await prisma.pointAssignment.count({
     where: { userId },
   });
@@ -71,7 +69,6 @@ export default async function DashboardPage() {
     _sum: { points: true },
   });
 
-  // Get user ranking
   const userRanking = await prisma.user.findMany({
     where: { totalPoints: { gt: 0 } },
     orderBy: { totalPoints: "desc" },

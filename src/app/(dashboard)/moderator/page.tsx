@@ -40,7 +40,6 @@ export default async function ModeratorPage() {
     redirect("/dashboard");
   }
 
-  // Stats
   const totalUsers = await prisma.user.count();
   const activeActivities = await prisma.activity.count({
     where: { isActive: true },
@@ -57,7 +56,6 @@ export default async function ModeratorPage() {
     },
   });
 
-  // Recent assignments
   const recentAssignments = await prisma.pointAssignment.findMany({
     where: {
       assignedById: session.user.id,

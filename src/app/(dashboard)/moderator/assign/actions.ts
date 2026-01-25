@@ -27,7 +27,6 @@ export async function assignPoints(formData: {
 
   const { userId, activityId, points, notes } = formData;
 
-  // Validate activity
   const activity = await prisma.activity.findUnique({
     where: { id: activityId },
   });
@@ -36,7 +35,6 @@ export async function assignPoints(formData: {
     return { error: "Aktywność nie istnieje" };
   }
 
-  // Validate points based on activity type
   if (activity.type === "FIXED") {
     if (points !== activity.fixedPoints) {
       return {
@@ -54,7 +52,6 @@ export async function assignPoints(formData: {
     }
   }
 
-  // Create point assignment
   await prisma.pointAssignment.create({
     data: {
       userId,
@@ -65,7 +62,6 @@ export async function assignPoints(formData: {
     },
   });
 
-  // Update user total points
   await prisma.user.update({
     where: { id: userId },
     data: {

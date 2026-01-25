@@ -29,7 +29,6 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  // Stats
   const totalUsers = await prisma.user.count();
   const moderators = await prisma.user.count({
     where: { role: "MODERATOR" },
@@ -106,7 +105,7 @@ export default async function AdminPage() {
         {quickActions.map((action) => (
           <Card
             key={action.href}
-            className="hover:bg-muted/50 transition-colors"
+            className="hover:bg-muted/50 flex flex-col justify-between transition-colors"
           >
             <CardHeader>
               <div className="flex items-center gap-3">

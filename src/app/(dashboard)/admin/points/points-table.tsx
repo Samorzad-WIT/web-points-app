@@ -9,7 +9,6 @@ import { toast } from "sonner";
 
 import { deletePointAssignment } from "@/actions/points";
 import { DataTable } from "@/components/data-table";
-import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,11 +82,9 @@ export function PointsTable({ assignments }: PointsTableProps) {
 
   const columns: ColumnDef<Assignment>[] = [
     {
-      accessorFn: (row) => row.user.name ?? row.user.email, // Search by name or email
+      accessorFn: (row) => row.user.name ?? row.user.email,
       id: "userName",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Użytkownik" />
-      ),
+      header: "Użytkownik",
       cell: ({ row }) => {
         const assignment = row.original;
         return (
@@ -105,9 +102,7 @@ export function PointsTable({ assignments }: PointsTableProps) {
     {
       id: "activity",
       accessorFn: (row) => row.activity.name,
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Aktywność" />
-      ),
+      header: "Aktywność",
       cell: ({ row }) => {
         const assignment = row.original;
         return (
@@ -125,9 +120,7 @@ export function PointsTable({ assignments }: PointsTableProps) {
     {
       id: "assignedBy",
       accessorFn: (row) => row.assignedBy.name ?? row.assignedBy.email,
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Przyznał" />
-      ),
+      header: "Przyznał",
       cell: ({ row }) => {
         const assignment = row.original;
         return (
@@ -141,18 +134,14 @@ export function PointsTable({ assignments }: PointsTableProps) {
     },
     {
       accessorKey: "points",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Punkty" />
-      ),
+      header: "Punkty",
       cell: ({ row }) => {
         return <Badge variant="secondary">+{row.getValue("points")}</Badge>;
       },
     },
     {
       accessorKey: "createdAt",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Data" />
-      ),
+      header: "Data",
       cell: ({ row }) => {
         return (
           <div className="text-muted-foreground text-sm">
@@ -163,13 +152,15 @@ export function PointsTable({ assignments }: PointsTableProps) {
     },
     {
       id: "actions",
+      enableHiding: false,
       cell: ({ row }) => {
         const assignment = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={
+              render={(props) => (
                 <Button
+                  {...props}
                   variant="ghost"
                   className="size-8 p-0"
                   disabled={isLoading === assignment.id}
@@ -180,16 +171,16 @@ export function PointsTable({ assignments }: PointsTableProps) {
                     <MoreHorizontal className="size-4" />
                   )}
                 </Button>
-              }
+              )}
             />
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-full">
               <DropdownMenuItem
-                className="text-red-600 focus:text-red-600"
                 onClick={() => {
                   setAssignmentToDelete(assignment);
                 }}
+                variant="destructive"
               >
-                <Trash className="mr-2 size-4" />
+                <Trash />
                 Usuń przydzielenie
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -233,12 +224,7 @@ export function PointsTable({ assignments }: PointsTableProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Usuń
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete}>Usuń</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -112,7 +112,7 @@ export function PodiumPlace({ user, position }: PodiumPlaceProps) {
           </Avatar>
           <div
             className={cn(
-              "absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-xs font-bold tracking-widest md:-bottom-4 md:px-3 md:py-1 md:text-sm",
+              "absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-xs font-bold tracking-widest backdrop-blur-sm md:-bottom-4 md:px-3 md:py-1 md:text-sm",
               styles.badge,
             )}
           >

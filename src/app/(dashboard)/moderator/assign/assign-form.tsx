@@ -17,15 +17,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+} from "@/components/ui/combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -65,6 +67,24 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null,
   );
+  const [userQuery, setUserQuery] = useState("");
+  const [activityQuery, setActivityQuery] = useState("");
+
+  const filteredUsers =
+    userQuery === ""
+      ? users
+      : users.filter((user) =>
+          (user.name ?? user.email)
+            .toLowerCase()
+            .includes(userQuery.toLowerCase()),
+        );
+
+  const filteredActivities =
+    activityQuery === ""
+      ? activities
+      : activities.filter((activity) =>
+          activity.name.toLowerCase().includes(activityQuery.toLowerCase()),
+        );
 
   const form = useForm({
     defaultValues: {
@@ -138,46 +158,61 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                     <Users className="size-4" />
                     Użytkownik
                   </FieldLabel>
-                  <Select
+                  <Combobox
                     value={field.state.value}
                     onValueChange={(value) => {
                       if (value !== null) {
                         field.handleChange(value);
                       }
                     }}
+                    onInputValueChange={(value) => {
+                      setUserQuery(value);
+                    }}
                   >
-                    <SelectTrigger>
-                      <SelectValue>
-                        {(value: string) => {
-                          const user = users.find((u) => u.id === value);
-                          if (user == null) {
-                            return (
-                              <span className="text-muted-foreground">
-                                Wybierz użytkownika
-                              </span>
-                            );
-                          }
+                    <ComboboxTrigger className="border-input placeholder:text-muted-foreground focus:ring-ring flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50">
+                      {field.state.value ? (
+                        (() => {
+                          const user = users.find(
+                            (u) => u.id === field.state.value,
+                          );
                           return (
-                            <span className="flex items-center gap-2">
-                              {user.name ?? user.email}
+                            <span className="flex items-center gap-2 truncate">
+                              {user === undefined
+                                ? "..."
+                                : (user.name ?? user.email)}
                             </span>
                           );
-                        }}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent align="start" alignItemWithTrigger={false}>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          <span className="flex items-center gap-2">
-                            {user.name ?? user.email}
-                            <Badge variant="outline" className="text-xs">
-                              {user.totalPoints} pkt
-                            </Badge>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        })()
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Wybierz użytkownika
+                        </span>
+                      )}
+                    </ComboboxTrigger>
+                    <ComboboxContent>
+                      <ComboboxInput
+                        placeholder="Szukaj użytkownika..."
+                        showTrigger={false}
+                      />
+                      <ComboboxList>
+                        {filteredUsers.length === 0 && (
+                          <ComboboxEmpty>
+                            Nie znaleziono użytkownika
+                          </ComboboxEmpty>
+                        )}
+                        {filteredUsers.map((user) => (
+                          <ComboboxItem key={user.id} value={user.id}>
+                            <span className="flex items-center gap-2">
+                              {user.name ?? user.email}
+                              <Badge variant="outline" className="text-xs">
+                                {user.totalPoints} pkt
+                              </Badge>
+                            </span>
+                          </ComboboxItem>
+                        ))}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
                   <FieldError errors={field.state.meta.errors} />
                 </Field>
               )}
@@ -190,7 +225,7 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                     <ClipboardList className="size-4" />
                     Aktywność
                   </FieldLabel>
-                  <Select
+                  <Combobox
                     value={field.state.value}
                     onValueChange={(value) => {
                       if (value !== null) {
@@ -199,39 +234,54 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                         setSelectedActivity(activity ?? null);
                       }
                     }}
+                    onInputValueChange={(value) => {
+                      setActivityQuery(value);
+                    }}
                   >
-                    <SelectTrigger>
-                      <SelectValue>
-                        {(value: string) => {
+                    <ComboboxTrigger className="border-input placeholder:text-muted-foreground focus:ring-ring flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50">
+                      {field.state.value ? (
+                        (() => {
                           const activity = activities.find(
-                            (a) => a.id === value,
+                            (a) => a.id === field.state.value,
                           );
-                          if (activity === undefined) {
-                            return (
-                              <span className="text-muted-foreground">
-                                Wybierz aktywność
-                              </span>
-                            );
-                          }
-                          return <span>{activity.name}</span>;
-                        }}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent align="start" alignItemWithTrigger={false}>
-                      {activities.map((activity) => (
-                        <SelectItem key={activity.id} value={activity.id}>
-                          <span className="flex items-center gap-2">
-                            {activity.name}
-                            <Badge variant="secondary" className="text-xs">
-                              {activity.type === "FIXED"
-                                ? `${String(activity.fixedPoints)} pkt`
-                                : `${String(activity.minPoints)}-${String(activity.maxPoints)} pkt`}
-                            </Badge>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          return (
+                            <span className="truncate">
+                              {activity === undefined ? "..." : activity.name}
+                            </span>
+                          );
+                        })()
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Wybierz aktywność
+                        </span>
+                      )}
+                    </ComboboxTrigger>
+                    <ComboboxContent>
+                      <ComboboxInput
+                        placeholder="Szukaj aktywności..."
+                        showTrigger={false}
+                      />
+                      <ComboboxList>
+                        {filteredActivities.length === 0 && (
+                          <ComboboxEmpty>
+                            Nie znaleziono aktywności
+                          </ComboboxEmpty>
+                        )}
+                        {filteredActivities.map((activity) => (
+                          <ComboboxItem key={activity.id} value={activity.id}>
+                            <span className="flex items-center gap-2">
+                              {activity.name}
+                              <Badge variant="secondary" className="text-xs">
+                                {activity.type === "FIXED"
+                                  ? `${String(activity.fixedPoints)} pkt`
+                                  : `${String(activity.minPoints)}-${String(activity.maxPoints)} pkt`}
+                              </Badge>
+                            </span>
+                          </ComboboxItem>
+                        ))}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
                   <FieldError errors={field.state.meta.errors} />
                 </Field>
               )}

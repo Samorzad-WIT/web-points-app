@@ -13,7 +13,7 @@ export async function getUsers() {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "ADMIN" && session?.user.role !== "MODERATOR") {
     throw new Error("Unauthorized");
   }
 
@@ -30,6 +30,34 @@ export async function getUsers() {
   });
 
   return { users };
+}
+
+export async function getUser(userId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session?.user.role !== "ADMIN" && session?.user.role !== "MODERATOR") {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      totalPoints: true,
+      createdAt: true,
+    },
+  });
+
+  if (user === null) {
+    return { error: "User not found" };
+  }
+
+  return { user };
 }
 
 export async function updateUserRole(userId: string, role: Role) {
@@ -55,6 +83,34 @@ export async function updateUserRole(userId: string, role: Role) {
     return { success: true };
   } catch {
     return { error: "Failed to update user role" };
+  }
+}
+
+export async function changeUserPassword(userId: string, newPassword: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session?.user.role !== "ADMIN") {
+    return { error: "Unauthorized" };
+  }
+
+  if (newPassword.length < 6) {
+    return { error: "Hasło musi mieć co najmniej 6 znaków" };
+  }
+
+  try {
+    await auth.api.setUserPassword({
+      body: {
+        userId,
+        newPassword,
+      },
+      headers: await headers(),
+    });
+
+    return { success: true };
+  } catch {
+    return { error: "Failed to change password" };
   }
 }
 

@@ -4,12 +4,14 @@ import { revalidateLogic, useForm } from "@tanstack/react-form";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   Edit,
+  Eye,
   MoreHorizontal,
   Plus,
   Power,
   PowerOff,
-  Trash2,
+  Trash,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,7 +24,6 @@ import {
   updateActivity,
 } from "@/actions/activities";
 import { DataTable } from "@/components/data-table";
-import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +33,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -89,28 +89,27 @@ export function ActivitiesTable({
   const columns: ColumnDef<Activity>[] = [
     {
       accessorKey: "name",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Nazwa" />
-      ),
+      header: "Nazwa",
       cell: ({ row }) => {
         const activity = row.original;
         return (
-          <div>
+          <Link
+            href={`/admin/activities/${activity.id}`}
+            className="block hover:opacity-80"
+          >
             <p className="font-medium">{activity.name}</p>
             {activity.description === null ? null : (
               <p className="text-muted-foreground line-clamp-1 text-xs">
                 {activity.description}
               </p>
             )}
-          </div>
+          </Link>
         );
       },
     },
     {
       accessorKey: "type",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Typ" />
-      ),
+      header: "Typ",
       cell: ({ row }) => (
         <Badge variant="outline">
           {row.getValue("type") === "FIXED" ? "Stałe" : "Zakres"}
@@ -119,9 +118,7 @@ export function ActivitiesTable({
     },
     {
       id: "points",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Punkty" />
-      ),
+      header: "Punkty",
       accessorFn: (row) =>
         row.type === "FIXED" ? row.fixedPoints : row.minPoints,
       cell: ({ row }) => {
@@ -138,16 +135,12 @@ export function ActivitiesTable({
     },
     {
       accessorKey: "_count.assignments",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Przypisania" />
-      ),
+      header: "Przypisania",
       cell: ({ row }) => row.original._count.assignments,
     },
     {
       accessorKey: "isActive",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
-      ),
+      header: "Status",
       cell: ({ row }) => (
         <Badge variant={row.original.isActive ? "default" : "secondary"}>
           {row.original.isActive ? "Aktywna" : "Nieaktywna"}
@@ -159,6 +152,7 @@ export function ActivitiesTable({
   if (!readonly) {
     columns.push({
       id: "actions",
+      enableHiding: false,
       cell: ({ row }) => <ActivityActions activity={row.original} />,
     });
   }
@@ -408,6 +402,7 @@ export function CreateActivityDialog() {
 function ActivityActions({ activity }: { activity: Activity }) {
   const router = useRouter();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   return (
     <>
@@ -416,17 +411,54 @@ function ActivityActions({ activity }: { activity: Activity }) {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
       />
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tej operacji nie można cofnąć. To trwale usunie aktywność &quot;
+              {activity.name}&quot; i usunie dane z naszych serwerów.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async (event: React.MouseEvent) => {
+                event.preventDefault();
+                const result = await deleteActivity(activity.id);
+                if (result.error === undefined) {
+                  toast.success("Aktywność została usunięta");
+                  setDeleteDialogOpen(false);
+                  router.refresh();
+                } else {
+                  toast.error(result.error);
+                }
+              }}
+            >
+              Usuń
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="flex justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={
-              <Button variant="ghost" className="h-8 w-8 p-0">
+            render={(props) => (
+              <Button {...props} variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Otwórz menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
-            }
+            )}
           />
           <DropdownMenuContent align="end">
+            <DropdownMenuItem>
+              <Link
+                href={`/admin/activities/${activity.id}`}
+                className="flex w-full items-center"
+              >
+                <Eye className="mr-2 h-4 w-4" /> Szczegóły
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 setEditDialogOpen(true);
@@ -460,50 +492,14 @@ function ActivityActions({ activity }: { activity: Activity }) {
                 </>
               )}
             </DropdownMenuItem>
-            <AlertDialog>
-              <AlertDialogTrigger
-                render={
-                  <DropdownMenuItem
-                    onSelect={(event) => {
-                      event.preventDefault();
-                    }}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" /> Usuń
-                  </DropdownMenuItem>
-                }
-              />
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Czy na pewno chcesz usunąć?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Tej operacji nie można cofnąć. To trwale usunie aktywność
-                    &quot;
-                    {activity.name}&quot; i usunie dane z naszych serwerów.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={async (event: React.MouseEvent) => {
-                      event.preventDefault();
-                      const result = await deleteActivity(activity.id);
-                      if (result.error === undefined) {
-                        toast.success("Aktywność została usunięta");
-                        router.refresh();
-                      } else {
-                        toast.error(result.error);
-                      }
-                    }}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Usuń
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <DropdownMenuItem
+              onClick={() => {
+                setDeleteDialogOpen(true);
+              }}
+              variant="destructive"
+            >
+              <Trash /> Usuń
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

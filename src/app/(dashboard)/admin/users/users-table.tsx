@@ -4,18 +4,19 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import {
+  Eye,
   GraduationCap,
   MoreHorizontal,
   Shield,
   Trash,
   User as UserIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { deleteUser, updateUserRole } from "@/actions/users";
 import { DataTable } from "@/components/data-table";
-import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,12 +57,14 @@ interface User {
 interface UsersTableProps {
   users: User[];
   currentUserId: string;
+  currentUserRole: Role;
   readonly?: boolean;
 }
 
 export function UsersTable({
   users,
   currentUserId,
+  currentUserRole,
   readonly = false,
 }: UsersTableProps) {
   const [isLoading, setIsLoading] = useState<string | null>(null);
@@ -107,13 +110,14 @@ export function UsersTable({
   const columns: ColumnDef<User>[] = [
     {
       accessorKey: "name",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Użytkownik" />
-      ),
+      header: "Użytkownik",
       cell: ({ row }) => {
         const user = row.original;
         return (
-          <div className="flex items-center gap-3">
+          <Link
+            href={`/admin/users/${user.id}`}
+            className="flex w-fit items-center gap-3 hover:opacity-80"
+          >
             <Avatar className="size-8">
               <AvatarFallback>
                 {(() => {
@@ -134,15 +138,13 @@ export function UsersTable({
                 {user.email}
               </span>
             </div>
-          </div>
+          </Link>
         );
       },
     },
     {
       accessorKey: "role",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Rola" />
-      ),
+      header: "Rola",
       cell: ({ row }) => {
         const role = row.getValue("role");
         switch (role) {
@@ -162,9 +164,7 @@ export function UsersTable({
     },
     {
       accessorKey: "totalPoints",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Punkty" />
-      ),
+      header: "Punkty",
       cell: ({ row }) => {
         const points = Number.parseInt(row.getValue("totalPoints"));
         return <Badge variant="outline">{points}</Badge>;
@@ -172,9 +172,7 @@ export function UsersTable({
     },
     {
       accessorKey: "createdAt",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Dołączył" />
-      ),
+      header: "Dołączył",
       cell: ({ row }) => {
         return (
           <div className="text-muted-foreground text-sm">
@@ -188,9 +186,11 @@ export function UsersTable({
   if (!readonly) {
     columns.push({
       id: "actions",
+      enableHiding: false,
       cell: ({ row }) => {
         const user = row.original;
         const isCurrent = user.id === currentUserId;
+        const isAdmin = currentUserRole === "ADMIN";
 
         return (
           <DropdownMenu>
@@ -213,51 +213,69 @@ export function UsersTable({
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Akcje</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <Shield className="mr-2 size-4" />
-                    Zmień rolę
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem
-                      onClick={async () => handleRoleChange(user.id, "USER")}
-                      disabled={user.role === "USER"}
-                    >
-                      <UserIcon className="mr-2 size-4" />
-                      Użytkownik
-                      {user.role === "USER" && " (Obecna)"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={async () =>
-                        handleRoleChange(user.id, "MODERATOR")
-                      }
-                      disabled={user.role === "MODERATOR"}
-                    >
-                      <GraduationCap className="mr-2 size-4" />
-                      Moderator
-                      {user.role === "MODERATOR" && " (Obecna)"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={async () => handleRoleChange(user.id, "ADMIN")}
-                      disabled={user.role === "ADMIN"}
-                    >
-                      <Shield className="mr-2 size-4" />
-                      Admin
-                      {user.role === "ADMIN" && " (Obecna)"}
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-600 focus:text-red-600"
-                  onClick={() => {
-                    setUserToDelete(user);
-                  }}
-                  disabled={isCurrent}
-                >
-                  <Trash className="mr-2 size-4" />
-                  Usuń użytkownika
+                <DropdownMenuItem>
+                  <Link
+                    href={`/admin/users/${user.id}`}
+                    className="flex w-full items-center"
+                  >
+                    <Eye className="mr-2 size-4" />
+                    Szczegóły
+                  </Link>
                 </DropdownMenuItem>
+
+                {isAdmin ? (
+                  <>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <Shield className="mr-2 size-4" />
+                        Zmień rolę
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem
+                          onClick={async () =>
+                            handleRoleChange(user.id, "USER")
+                          }
+                          disabled={user.role === "USER"}
+                        >
+                          <UserIcon className="mr-2 size-4" />
+                          Użytkownik
+                          {user.role === "USER" && " (Obecna)"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={async () =>
+                            handleRoleChange(user.id, "MODERATOR")
+                          }
+                          disabled={user.role === "MODERATOR"}
+                        >
+                          <GraduationCap className="mr-2 size-4" />
+                          Moderator
+                          {user.role === "MODERATOR" && " (Obecna)"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={async () =>
+                            handleRoleChange(user.id, "ADMIN")
+                          }
+                          disabled={user.role === "ADMIN"}
+                        >
+                          <Shield className="mr-2 size-4" />
+                          Admin
+                          {user.role === "ADMIN" && " (Obecna)"}
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => {
+                        setUserToDelete(user);
+                      }}
+                      disabled={isCurrent}
+                    >
+                      <Trash className="mr-2 size-4" />
+                      Usuń użytkownika
+                    </DropdownMenuItem>
+                  </>
+                ) : null}
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -298,10 +316,7 @@ export function UsersTable({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteUser}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogAction onClick={handleDeleteUser}>
               Usuń
             </AlertDialogAction>
           </AlertDialogFooter>
