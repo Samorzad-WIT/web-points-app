@@ -75,7 +75,7 @@ export function PodiumPlace({ user, position }: PodiumPlaceProps) {
     >
       <div
         className={cn(
-          "bg-radial-gradient absolute inset-0 from-white/5 to-transparent opacity-50 transition-opacity duration-500 group-hover:opacity-80",
+          "bg-radial-gradient absolute inset-0 from-white/5 to-transparent opacity-50 transition-opacity duration-500 group-hover:opacity-80 md:rounded-t-2xl",
           styles.glow,
         )}
       />
