@@ -123,7 +123,7 @@ export function PodiumPlace({ user, position }: PodiumPlaceProps) {
         <div className="mt-4 flex flex-col items-center text-center md:mt-6">
           <p
             className={cn(
-              "line-clamp-1 max-w-[120px] font-bold tracking-tight md:max-w-[150px]",
+              "line-clamp-1 font-bold tracking-tight",
               isWinner ? "text-lg md:text-2xl" : "text-base md:text-lg",
               "text-foreground drop-shadow-md",
             )}
