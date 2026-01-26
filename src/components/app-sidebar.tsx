@@ -98,10 +98,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-semibold">Samorząd W4N</span>
-                <span className="text-muted-foreground text-xs">
-                  System Punktów
-                </span>
+                <span className="font-semibold">Punkty samorządowe</span>
+                <a
+                  href="https://github.com/Antoni-Czaplicki"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground text-xs hover:underline"
+                >
+                  by Antoni Czaplicki
+                </a>
               </div>
             </div>
           </SidebarMenuItem>
