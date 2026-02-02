@@ -26,7 +26,13 @@ import {
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export default async function ModeratorPage() {
+interface PageProps {
+  searchParams: Promise<{ termId?: string }>;
+}
+
+export default async function ModeratorPage({ searchParams }: PageProps) {
+  const { termId } = await searchParams;
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -35,20 +41,41 @@ export default async function ModeratorPage() {
     redirect("/login");
   }
 
-  const role = session.user.role ?? "USER";
-  if (role !== "MODERATOR" && role !== "ADMIN") {
+  const role = session.user.role ?? "user";
+  if (role !== "moderator" && role !== "admin") {
     redirect("/dashboard");
   }
+
+  let effectiveTermId = termId;
+  if (effectiveTermId === undefined) {
+    const activeTerm = await prisma.term.findFirst({
+      where: { isActive: true },
+    });
+
+    if (activeTerm === null) {
+      const latestTerm = await prisma.term.findFirst({
+        orderBy: { startDate: "desc" },
+      });
+      effectiveTermId = latestTerm?.id;
+    } else {
+      effectiveTermId = activeTerm.id;
+    }
+  }
+
+  const termFilter =
+    effectiveTermId === undefined ? undefined : { termId: effectiveTermId };
 
   const totalUsers = await prisma.user.count();
   const activeActivities = await prisma.activity.count({
     where: { isActive: true },
   });
   const totalPointsAssigned = await prisma.pointAssignment.aggregate({
+    where: termFilter,
     _sum: { points: true },
   });
   const thisMonthAssignments = await prisma.pointAssignment.count({
     where: {
+      ...termFilter,
       createdAt: {
         gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
       },
@@ -59,6 +86,7 @@ export default async function ModeratorPage() {
   const recentAssignments = await prisma.pointAssignment.findMany({
     where: {
       assignedById: session.user.id,
+      ...termFilter,
     },
     orderBy: { createdAt: "desc" },
     take: 5,
@@ -106,7 +134,7 @@ export default async function ModeratorPage() {
         <StatCard
           title="Łącznie punktów"
           value={totalPointsAssigned._sum.points ?? 0}
-          description="Przyznanych w systemie"
+          description="Przyznanych w semestrze"
           icon={TrendingUp}
         />
         <StatCard
@@ -141,7 +169,7 @@ export default async function ModeratorPage() {
                 {recentAssignments.map((assignment) => (
                   <TableRow key={assignment.id}>
                     <TableCell className="font-medium">
-                      {assignment.user.name ?? assignment.user.email}
+                      {assignment.user.name}
                     </TableCell>
                     <TableCell>
                       <div>

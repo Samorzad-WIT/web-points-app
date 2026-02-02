@@ -62,8 +62,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-
-import type { ActivityType } from "../../../../generated/prisma/enums";
+import type { ActivityType } from "@/generated/prisma/enums";
 
 interface Activity {
   id: string;

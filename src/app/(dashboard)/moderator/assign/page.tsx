@@ -17,12 +17,12 @@ export default async function AssignPointsPage() {
     redirect("/login");
   }
 
-  const role = session.user.role ?? "USER";
-  if (role !== "MODERATOR" && role !== "ADMIN") {
+  const role = session.user.role ?? "user";
+  if (role !== "moderator" && role !== "admin") {
     redirect("/dashboard");
   }
 
-  const users = await prisma.user.findMany({
+  const usersData = await prisma.user.findMany({
     where: {
       id: { not: session.user.id },
     },
@@ -31,9 +31,22 @@ export default async function AssignPointsPage() {
       id: true,
       name: true,
       email: true,
-      totalPoints: true,
     },
   });
+
+  const pointsAggregates = await prisma.pointAssignment.groupBy({
+    by: ["userId"],
+    _sum: { points: true },
+  });
+  const userPointsMap = new Map<string, number>();
+  for (const agg of pointsAggregates) {
+    userPointsMap.set(agg.userId, agg._sum.points ?? 0);
+  }
+
+  const users = usersData.map((user) => ({
+    ...user,
+    totalPoints: userPointsMap.get(user.id) ?? 0,
+  }));
 
   const activities = await prisma.activity.findMany({
     where: { isActive: true },

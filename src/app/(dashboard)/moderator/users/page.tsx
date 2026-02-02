@@ -23,22 +23,36 @@ export default async function ModeratorUsersPage() {
     redirect("/login");
   }
 
-  const role = session.user.role ?? "USER";
-  if (role !== "MODERATOR" && role !== "ADMIN") {
+  const role = session.user.role ?? "user";
+  if (role !== "moderator" && role !== "admin") {
     redirect("/dashboard");
   }
 
-  const users = await prisma.user.findMany({
+  const usersData = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
       name: true,
       email: true,
       role: true,
-      totalPoints: true,
       createdAt: true,
     },
   });
+
+  const pointsAggregates = await prisma.pointAssignment.groupBy({
+    by: ["userId"],
+    _sum: { points: true },
+  });
+  const userPointsMap = new Map<string, number>();
+  for (const agg of pointsAggregates) {
+    userPointsMap.set(agg.userId, agg._sum.points ?? 0);
+  }
+
+  const users = usersData.map((user) => ({
+    ...user,
+    role: user.role as import("@/types").Role,
+    totalPoints: userPointsMap.get(user.id) ?? 0,
+  }));
 
   return (
     <div className="space-y-6">
@@ -59,7 +73,7 @@ export default async function ModeratorUsersPage() {
           <UsersTable
             users={users}
             currentUserId={session.user.id}
-            currentUserRole={role}
+            currentUserRole={role as import("@/types").Role}
             readonly
           />
         </CardContent>

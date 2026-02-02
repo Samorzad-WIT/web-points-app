@@ -24,17 +24,17 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  const role = session.user.role ?? "USER";
-  if (role !== "ADMIN") {
+  const role = session.user.role ?? "user";
+  if (role !== "admin") {
     redirect("/dashboard");
   }
 
   const totalUsers = await prisma.user.count();
   const moderators = await prisma.user.count({
-    where: { role: "MODERATOR" },
+    where: { role: "moderator" },
   });
   const admins = await prisma.user.count({
-    where: { role: "ADMIN" },
+    where: { role: "admin" },
   });
   const totalActivities = await prisma.activity.count();
   const activeActivities = await prisma.activity.count({

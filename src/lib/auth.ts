@@ -7,7 +7,7 @@ import { prisma } from "./prisma";
 export const auth = betterAuth({
   plugins: [admin()],
   database: prismaAdapter(prisma, {
-    provider: "sqlite",
+    provider: "postgresql",
   }),
 
   emailAndPassword: {
@@ -28,13 +28,10 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-        type: "string",
+        type: ["user", "moderator", "admin"],
+        defaultValue: "user",
         required: false,
-      },
-      totalPoints: {
-        type: "number",
-        defaultValue: 0,
-        required: false,
+        input: false,
       },
     },
   },

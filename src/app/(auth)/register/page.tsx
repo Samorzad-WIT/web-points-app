@@ -67,7 +67,7 @@ export default function RegisterPage() {
         if (result.error === null) {
           setSuccess(true);
           setTimeout(() => {
-            router.push("/login");
+            router.push("/");
           }, 2000);
         } else {
           setError(result.error.message ?? "Błąd podczas rejestracji");
@@ -101,7 +101,7 @@ export default function RegisterPage() {
             <Alert className="border-green-900/50 bg-green-950/50">
               <CheckCircle2 className="size-4 text-green-400" />
               <AlertDescription className="text-green-300">
-                Konto zostało utworzone! Przekierowuję do logowania...
+                Konto zostało utworzone! Przekierowuję do aplikacji...
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -156,7 +156,7 @@ export default function RegisterPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="twoj.email@student.pwr.edu.pl"
+                      placeholder="123456@student.pwr.edu.pl"
                       className="focus:border-primary focus:ring-primary border-slate-700 bg-slate-800/50 text-slate-100 placeholder:text-slate-500"
                       value={field.state.value}
                       onChange={(event) => {

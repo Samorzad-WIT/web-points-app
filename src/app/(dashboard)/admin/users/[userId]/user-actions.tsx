@@ -51,7 +51,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import type { Role } from "@/generated/prisma/enums";
+import type { Role } from "@/types";
 
 interface User {
   id: string;
@@ -77,7 +77,7 @@ export function UserActions({
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
-  const handleRoleChange = async (newRole: Role) => {
+  const handleRoleChange = async (newRole: "user" | "moderator" | "admin") => {
     setIsLoading(true);
     try {
       const result = await updateUserRole(user.id, newRole);
@@ -135,7 +135,7 @@ export function UserActions({
   };
 
   const isCurrent = user.id === currentUserId;
-  const isAdmin = currentUserRole === "ADMIN";
+  const isAdmin = currentUserRole === "admin";
 
   if (!isAdmin) {
     return null;
@@ -167,28 +167,28 @@ export function UserActions({
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem
-                  onClick={async () => handleRoleChange("USER")}
-                  disabled={user.role === "USER"}
+                  onClick={async () => handleRoleChange("user")}
+                  disabled={user.role === "user"}
                 >
                   <UserIcon className="mr-2 size-4" />
                   Użytkownik
-                  {user.role === "USER" && " (Obecna)"}
+                  {user.role === "user" && " (Obecna)"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => handleRoleChange("MODERATOR")}
-                  disabled={user.role === "MODERATOR"}
+                  onClick={async () => handleRoleChange("moderator")}
+                  disabled={user.role === "moderator"}
                 >
                   <GraduationCap className="mr-2 size-4" />
                   Moderator
-                  {user.role === "MODERATOR" && " (Obecna)"}
+                  {user.role === "moderator" && " (Obecna)"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => handleRoleChange("ADMIN")}
-                  disabled={user.role === "ADMIN"}
+                  onClick={async () => handleRoleChange("admin")}
+                  disabled={user.role === "admin"}
                 >
                   <Shield className="mr-2 size-4" />
                   Admin
-                  {user.role === "ADMIN" && " (Obecna)"}
+                  {user.role === "admin" && " (Obecna)"}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>

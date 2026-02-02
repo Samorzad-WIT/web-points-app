@@ -6,19 +6,23 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function getStatistics() {
+export async function getStatistics(termId?: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN" && session?.user.role !== "MODERATOR") {
+  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
     throw new Error("Unauthorized");
   }
 
   const thirtyDaysAgo = subDays(startOfDay(new Date()), 30);
 
+  const termFilter =
+    termId !== undefined && termId !== "" ? { termId } : undefined;
+
   const assignmentsLast30Days = await prisma.pointAssignment.findMany({
     where: {
+      ...termFilter,
       createdAt: {
         gte: thirtyDaysAgo,
       },
@@ -50,6 +54,7 @@ export async function getStatistics() {
 
   const assignmentsPerActivity = await prisma.pointAssignment.groupBy({
     by: ["activityId"],
+    where: termFilter,
     _count: {
       id: true,
     },
@@ -76,6 +81,7 @@ export async function getStatistics() {
 
   const pointsPerActivity = await prisma.pointAssignment.groupBy({
     by: ["activityId"],
+    where: termFilter,
     _sum: {
       points: true,
     },
@@ -94,6 +100,7 @@ export async function getStatistics() {
 
   const pointsPerAssigner = await prisma.pointAssignment.groupBy({
     by: ["assignedById"],
+    where: termFilter,
     _sum: {
       points: true,
     },
@@ -120,16 +127,33 @@ export async function getStatistics() {
     .toSorted((a, b) => b.points - a.points)
     .slice(0, 5);
 
-  const topUsersData = await prisma.user.findMany({
+  const pointsPerUser = await prisma.pointAssignment.groupBy({
+    by: ["userId"],
+    where: termFilter,
+    _sum: {
+      points: true,
+    },
     orderBy: {
-      totalPoints: "desc",
+      _sum: {
+        points: "desc",
+      },
     },
     take: 5,
-    select: {
-      name: true,
-      email: true,
-      totalPoints: true,
-    },
+  });
+
+  const topUserIds = pointsPerUser.map((p) => p.userId);
+  const topUsers = await prisma.user.findMany({
+    where: { id: { in: topUserIds } },
+    select: { id: true, name: true, email: true },
+  });
+
+  const topUsersData = pointsPerUser.map((item) => {
+    const user = topUsers.find((u) => u.id === item.userId);
+    return {
+      name: user?.name ?? user?.email ?? "Unknown",
+      email: user?.email ?? null,
+      totalPoints: item._sum.points ?? 0,
+    };
   });
 
   const dailyActivityMap = new Map<string, number>();
@@ -163,21 +187,26 @@ export async function getStatistics() {
 
     totalPoints: await prisma.pointAssignment
       .aggregate({
+        where: termFilter,
         _sum: { points: true },
       })
       .then((result) => result._sum.points ?? 0),
 
-    totalAssignments: await prisma.pointAssignment.count(),
+    totalAssignments: await prisma.pointAssignment.count({
+      where: termFilter,
+    }),
 
     totalUsers: await prisma.user.count(),
 
     recentAssignments: await prisma.pointAssignment.findMany({
+      where: termFilter,
       take: 5,
       orderBy: { createdAt: "desc" },
       include: {
         user: { select: { name: true, email: true } },
         activity: { select: { name: true } },
         assignedBy: { select: { name: true } },
+        term: { select: { name: true } },
       },
     }),
   };

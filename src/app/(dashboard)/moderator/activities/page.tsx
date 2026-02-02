@@ -23,8 +23,8 @@ export default async function ModeratorActivitiesPage() {
     redirect("/login");
   }
 
-  const role = session.user.role ?? "USER";
-  if (role !== "MODERATOR" && role !== "ADMIN") {
+  const role = session.user.role ?? "user";
+  if (role !== "moderator" && role !== "admin") {
     redirect("/dashboard");
   }
 

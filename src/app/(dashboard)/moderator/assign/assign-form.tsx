@@ -1,12 +1,14 @@
 "use client";
 
 import { revalidateLogic, useForm } from "@tanstack/react-form";
-import { Award, ClipboardList, Users } from "lucide-react";
+import { AlertCircle, Award, ClipboardList, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { useTerm } from "@/components/term-provider";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -120,6 +122,8 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
     },
   });
 
+  const { isHistoricView } = useTerm();
+
   useEffect(() => {
     if (
       // eslint-disable-next-line react-you-might-not-need-an-effect/no-event-handler
@@ -129,6 +133,22 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
       form.setFieldValue("points", selectedActivity.fixedPoints);
     }
   }, [selectedActivity, form]);
+
+  if (isHistoricView) {
+    return (
+      <Alert
+        variant="default"
+        className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/50 dark:text-amber-200"
+      >
+        <AlertCircle className="h-4 w-4 text-amber-900 dark:text-amber-200" />
+        <AlertTitle>Tryb historyczny</AlertTitle>
+        <AlertDescription>
+          Nie można przydzielać punktów dla zakończonych semestrów. Przełącz się
+          na aktywny semestr, aby dokonać przydziału.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -189,7 +209,7 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                         </span>
                       )}
                     </ComboboxTrigger>
-                    <ComboboxContent>
+                    <ComboboxContent className="min-w-[var(--anchor-width)]">
                       <ComboboxInput
                         placeholder="Szukaj użytkownika..."
                         showTrigger={false}
@@ -256,7 +276,7 @@ export function AssignPointsForm({ users, activities }: AssignPointsFormProps) {
                         </span>
                       )}
                     </ComboboxTrigger>
-                    <ComboboxContent>
+                    <ComboboxContent className="min-w-[var(--anchor-width)]">
                       <ComboboxInput
                         placeholder="Szukaj aktywności..."
                         showTrigger={false}

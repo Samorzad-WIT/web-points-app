@@ -108,7 +108,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="twoj.email@student.pwr.edu.pl"
+                    placeholder="123456@student.pwr.edu.pl"
                     className="focus:border-primary focus:ring-primary border-slate-700 bg-slate-800/50 text-slate-100 placeholder:text-slate-500"
                     value={field.state.value}
                     onChange={(event) => {

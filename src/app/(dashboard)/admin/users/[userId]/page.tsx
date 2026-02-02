@@ -30,7 +30,7 @@ export default async function UserDetailsPage({ params }: PageProps) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN" && session?.user.role !== "MODERATOR") {
+  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
     return notFound();
   }
 
@@ -47,14 +47,14 @@ export default async function UserDetailsPage({ params }: PageProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <DashboardHeader
-          heading={user.name ?? "Użytkownik bez nazwy"}
+          heading={user.name}
           text="Szczegóły użytkownika i historia punktów"
           icon={UserIcon}
         />
         <UserActions
           user={user}
           currentUserId={session.user.id}
-          currentUserRole={session.user.role}
+          currentUserRole={session.user.role as import("@/types").Role}
         />
       </div>
 
@@ -77,9 +77,9 @@ export default async function UserDetailsPage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {user.role === "ADMIN" ? (
+              {user.role === "admin" ? (
                 <Badge variant="destructive">Admin</Badge>
-              ) : user.role === "MODERATOR" ? (
+              ) : user.role === "moderator" ? (
                 <Badge className="bg-blue-500">Moderator</Badge>
               ) : (
                 <Badge variant="secondary">Użytkownik</Badge>

@@ -8,6 +8,15 @@ import { prisma } from "@/lib/prisma";
 
 type ActivityType = "FIXED" | "RANGE";
 
+export async function getActiveActivities() {
+  const activities = await prisma.activity.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+  });
+
+  return { activities };
+}
+
 export async function createActivity(formData: {
   name: string;
   description?: string;
@@ -20,7 +29,7 @@ export async function createActivity(formData: {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     return { error: "Brak uprawnień" };
   }
 
@@ -80,7 +89,7 @@ export async function updateActivity(
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     return { error: "Brak uprawnień" };
   }
 
@@ -116,7 +125,7 @@ export async function getActivity(id: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     throw new Error("Unauthorized");
   }
 
@@ -141,7 +150,7 @@ export async function toggleActivity(id: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     return { error: "Brak uprawnień" };
   }
 
@@ -164,7 +173,7 @@ export async function deleteActivity(id: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     return { error: "Brak uprawnień" };
   }
 

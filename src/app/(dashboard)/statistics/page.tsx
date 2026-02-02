@@ -2,6 +2,7 @@ import { TrendingUp } from "lucide-react";
 
 import { getStatistics } from "@/actions/statistics";
 import { DashboardHeader } from "@/components/dashboard-header";
+import { prisma } from "@/lib/prisma";
 
 import {
   ActivitiesPieChart,
@@ -14,8 +15,30 @@ import {
   TopUsersChart,
 } from "./charts";
 
-export default async function StatisticsPage() {
-  const stats = await getStatistics();
+interface PageProps {
+  searchParams: Promise<{ termId?: string }>;
+}
+
+export default async function StatisticsPage({ searchParams }: PageProps) {
+  const { termId } = await searchParams;
+
+  let effectiveTermId = termId;
+  if (effectiveTermId === undefined) {
+    const activeTerm = await prisma.term.findFirst({
+      where: { isActive: true },
+    });
+
+    if (activeTerm === null) {
+      const latestTerm = await prisma.term.findFirst({
+        orderBy: { startDate: "desc" },
+      });
+      effectiveTermId = latestTerm?.id;
+    } else {
+      effectiveTermId = activeTerm.id;
+    }
+  }
+
+  const stats = await getStatistics(effectiveTermId);
 
   return (
     <div className="space-y-6">

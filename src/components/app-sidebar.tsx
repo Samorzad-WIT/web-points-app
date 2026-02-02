@@ -2,12 +2,15 @@
 
 import {
   Award,
+  Calendar,
   ChartPie,
   ChevronDown,
   ClipboardList,
+  FileText,
   History,
   Home,
   LogOut,
+  Send,
   Settings,
   Shield,
   Trophy,
@@ -45,6 +48,8 @@ import Logo from "../../public/logo.svg";
 
 const userNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Zgłoś punkty", url: "/dashboard/request", icon: Send },
+  { title: "Moje zgłoszenia", url: "/dashboard/requests", icon: FileText },
   { title: "Historia punktów", url: "/dashboard/history", icon: History },
   { title: "Ranking", url: "/dashboard/ranking", icon: Trophy },
   { title: "Ustawienia", url: "/dashboard/settings", icon: Settings },
@@ -52,6 +57,11 @@ const userNavItems = [
 
 const moderatorNavItems = [
   { title: "Panel moderatora", url: "/moderator", icon: Shield },
+  {
+    title: "Oczekujące zgłoszenia",
+    url: "/moderator/requests",
+    icon: FileText,
+  },
   { title: "Przydziel punkty", url: "/moderator/assign", icon: Award },
   { title: "Użytkownicy", url: "/moderator/users", icon: Users },
   { title: "Aktywności", url: "/moderator/activities", icon: ClipboardList },
@@ -63,6 +73,7 @@ const adminNavItems = [
   { title: "Użytkownicy", url: "/admin/users", icon: Users },
   { title: "Aktywności", url: "/admin/activities", icon: ClipboardList },
   { title: "Punkty", url: "/admin/points", icon: Award },
+  { title: "Semestry", url: "/admin/terms", icon: Calendar },
 ];
 
 const handleSignOut = async () => {
@@ -81,8 +92,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */
   const role = (session?.user as any)?.role as string | undefined;
-  const isModerator = role === "MODERATOR" || role === "ADMIN";
-  const isAdmin = role === "ADMIN";
+  const isModerator = role === "moderator" || role === "admin";
+  const isAdmin = role === "admin";
 
   return (
     <Sidebar {...props}>

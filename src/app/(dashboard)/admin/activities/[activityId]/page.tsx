@@ -34,7 +34,7 @@ export default async function ActivityDetailsPage({ params }: PageProps) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     return notFound();
   }
 

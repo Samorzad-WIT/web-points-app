@@ -26,7 +26,13 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 
-export default async function DashboardPage() {
+interface PageProps {
+  searchParams: Promise<{ termId?: string }>;
+}
+
+export default async function DashboardPage({ searchParams }: PageProps) {
+  const { termId } = await searchParams;
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -37,17 +43,31 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
 
+  let effectiveTermId = termId;
+  if (effectiveTermId === undefined) {
+    const activeTerm = await prisma.term.findFirst({
+      where: { isActive: true },
+    });
+
+    if (activeTerm === null) {
+      const latestTerm = await prisma.term.findFirst({
+        orderBy: { startDate: "desc" },
+      });
+      effectiveTermId = latestTerm?.id;
+    } else {
+      effectiveTermId = activeTerm.id;
+    }
+  }
+
+  const termFilter =
+    effectiveTermId === undefined ? undefined : { termId: effectiveTermId };
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: {
-      pointsReceived: {
-        include: {
-          activity: true,
-          assignedBy: true,
-        },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      },
+    select: {
+      id: true,
+      name: true,
+      email: true,
     },
   });
 
@@ -55,13 +75,33 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const recentPoints = await prisma.pointAssignment.findMany({
+    where: {
+      userId,
+      ...termFilter,
+    },
+    include: {
+      activity: true,
+      assignedBy: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  });
+
+  const totalPointsAgg = await prisma.pointAssignment.aggregate({
+    where: { userId, ...termFilter },
+    _sum: { points: true },
+  });
+  const totalPoints = totalPointsAgg._sum.points ?? 0;
+
   const totalAssignments = await prisma.pointAssignment.count({
-    where: { userId },
+    where: { userId, ...termFilter },
   });
 
   const thisMonthPoints = await prisma.pointAssignment.aggregate({
     where: {
       userId,
+      ...termFilter,
       createdAt: {
         gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
       },
@@ -69,26 +109,27 @@ export default async function DashboardPage() {
     _sum: { points: true },
   });
 
-  const userRanking = await prisma.user.findMany({
-    where: { totalPoints: { gt: 0 } },
-    orderBy: { totalPoints: "desc" },
-    select: { id: true },
+  const pointsAggregates = await prisma.pointAssignment.groupBy({
+    by: ["userId"],
+    where: termFilter,
+    _sum: { points: true },
   });
-  const rank = userRanking.findIndex((u) => u.id === userId) + 1;
+  const sortedRanking = pointsAggregates
+    .filter((agg) => (agg._sum.points ?? 0) > 0)
+    .toSorted((a, b) => (b._sum.points ?? 0) - (a._sum.points ?? 0));
+  const rank = sortedRanking.findIndex((u) => u.userId === userId) + 1;
 
   return (
     <div className="space-y-6">
       <DashboardHeader
-        heading={`Witaj, ${
-          user.name?.split(" ")[0] ?? user.email.split("@")[0]
-        }! 👋`}
+        heading={`Witaj, ${user.name.split(" ")[0]}! 👋`}
         text="Oto podsumowanie Twoich punktów aktywności"
       />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Łączne punkty"
-          value={user.totalPoints}
+          value={totalPoints}
           description="Wszystkie zdobyte punkty"
           icon={Award}
         />
@@ -107,7 +148,7 @@ export default async function DashboardPage() {
         <StatCard
           title="Pozycja w rankingu"
           value={rank > 0 ? `#${String(rank)}` : "-"}
-          description={`Spośród ${String(userRanking.length)} osób`}
+          description={`Spośród ${String(sortedRanking.length)} osób`}
           icon={Trophy}
         />
       </div>
@@ -121,10 +162,16 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {user.pointsReceived.length === 0 ? (
-              <p className="text-muted-foreground py-8 text-center">
-                Nie masz jeszcze przyznanych punktów
-              </p>
+            {recentPoints.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="bg-muted mb-4 flex size-12 items-center justify-center rounded-full">
+                  <TrendingUp className="text-muted-foreground size-6 opacity-50" />
+                </div>
+                <h3 className="font-semibold">Brak punktów</h3>
+                <p className="text-muted-foreground text-sm">
+                  Nie masz jeszcze żadnych przyznanych punktów w tym semestrze.
+                </p>
+              </div>
             ) : (
               <Table>
                 <TableHeader>
@@ -135,7 +182,7 @@ export default async function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {user.pointsReceived.map((assignment) => (
+                  {recentPoints.map((assignment) => (
                     <TableRow key={assignment.id}>
                       <TableCell>
                         <div className="font-medium">
@@ -171,7 +218,7 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TopRankingList currentUserId={userId} />
+            <TopRankingList currentUserId={userId} termId={effectiveTermId} />
           </CardContent>
         </Card>
       </div>
@@ -179,24 +226,62 @@ export default async function DashboardPage() {
   );
 }
 
-async function TopRankingList({ currentUserId }: { currentUserId: string }) {
-  const topUsers = await prisma.user.findMany({
-    where: { totalPoints: { gt: 0 } },
-    orderBy: { totalPoints: "desc" },
-    take: 5,
+async function TopRankingList({
+  currentUserId,
+  termId,
+}: {
+  currentUserId: string;
+  termId?: string;
+}) {
+  const termFilter = termId === undefined ? undefined : { termId };
+
+  const pointsAggregates = await prisma.pointAssignment.groupBy({
+    by: ["userId"],
+    where: termFilter,
+    _sum: { points: true },
+  });
+  const userPointsMap = new Map<string, number>();
+  for (const agg of pointsAggregates) {
+    userPointsMap.set(agg.userId, agg._sum.points ?? 0);
+  }
+
+  const sortedUserIds = [...userPointsMap.entries()]
+    .filter(([, points]) => points > 0)
+    .toSorted((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([id]) => id);
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: sortedUserIds } },
     select: {
       id: true,
       name: true,
       email: true,
-      totalPoints: true,
     },
   });
 
+  const topUsers = sortedUserIds
+    .map((id) => {
+      const user = users.find((u) => u.id === id);
+      return user === undefined
+        ? null
+        : { ...user, totalPoints: userPointsMap.get(id) ?? 0 };
+    })
+    .filter((u): u is NonNullable<typeof u> => u !== null);
+
   if (topUsers.length === 0) {
     return (
-      <p className="text-muted-foreground py-8 text-center">
-        Brak danych w rankingu
-      </p>
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <div className="bg-muted mb-4 flex size-12 items-center justify-center rounded-full">
+          <Trophy className="text-muted-foreground size-6 opacity-50" />
+        </div>
+        <h3 className="font-semibold">Brak danych w rankingu</h3>
+        <p className="text-muted-foreground text-sm">
+          Nikt jeszcze nie zdobył punktów w tym semestrze.
+          <br />
+          Bądź pierwszy! 🚀
+        </p>
+      </div>
     );
   }
 
@@ -228,7 +313,7 @@ async function TopRankingList({ currentUserId }: { currentUserId: string }) {
               {index + 1}
             </div>
             <div>
-              <p className="font-medium">{user.name ?? user.email}</p>
+              <p className="font-medium">{user.name}</p>
               {user.id === currentUserId && (
                 <p className="text-primary text-xs">To Ty!</p>
               )}

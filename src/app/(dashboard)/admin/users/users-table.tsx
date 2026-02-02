@@ -43,16 +43,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
-import type { Role } from "@/generated/prisma/enums";
-
-interface User {
-  id: string;
-  name: string | null;
-  email: string;
-  role: Role;
-  totalPoints: number;
-  createdAt: Date;
-}
+import type { Role, User } from "@/types";
 
 interface UsersTableProps {
   users: User[];
@@ -70,7 +61,10 @@ export function UsersTable({
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
-  const handleRoleChange = async (userId: string, newRole: Role) => {
+  const handleRoleChange = async (
+    userId: string,
+    newRole: "user" | "moderator" | "admin",
+  ) => {
     setIsLoading(userId);
     try {
       const result = await updateUserRole(userId, newRole);
@@ -148,10 +142,10 @@ export function UsersTable({
       cell: ({ row }) => {
         const role = row.getValue("role");
         switch (role) {
-          case "ADMIN": {
+          case "admin": {
             return <Badge variant="destructive">Admin</Badge>;
           }
-          case "MODERATOR": {
+          case "moderator": {
             return (
               <Badge className="bg-blue-500 hover:bg-blue-600">Moderator</Badge>
             );
@@ -190,7 +184,7 @@ export function UsersTable({
       cell: ({ row }) => {
         const user = row.original;
         const isCurrent = user.id === currentUserId;
-        const isAdmin = currentUserRole === "ADMIN";
+        const isAdmin = currentUserRole === "admin";
 
         return (
           <DropdownMenu>
@@ -233,33 +227,33 @@ export function UsersTable({
                       <DropdownMenuSubContent>
                         <DropdownMenuItem
                           onClick={async () =>
-                            handleRoleChange(user.id, "USER")
+                            handleRoleChange(user.id, "user")
                           }
-                          disabled={user.role === "USER"}
+                          disabled={user.role === "user"}
                         >
                           <UserIcon className="mr-2 size-4" />
                           Użytkownik
-                          {user.role === "USER" && " (Obecna)"}
+                          {user.role === "user" && " (Obecna)"}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={async () =>
-                            handleRoleChange(user.id, "MODERATOR")
+                            handleRoleChange(user.id, "moderator")
                           }
-                          disabled={user.role === "MODERATOR"}
+                          disabled={user.role === "moderator"}
                         >
                           <GraduationCap className="mr-2 size-4" />
                           Moderator
-                          {user.role === "MODERATOR" && " (Obecna)"}
+                          {user.role === "moderator" && " (Obecna)"}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={async () =>
-                            handleRoleChange(user.id, "ADMIN")
+                            handleRoleChange(user.id, "admin")
                           }
-                          disabled={user.role === "ADMIN"}
+                          disabled={user.role === "admin"}
                         >
                           <Shield className="mr-2 size-4" />
                           Admin
-                          {user.role === "ADMIN" && " (Obecna)"}
+                          {user.role === "admin" && " (Obecna)"}
                         </DropdownMenuItem>
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>

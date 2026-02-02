@@ -5,29 +5,42 @@ import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-import type { Role } from "../generated/prisma/enums";
+import type { Role } from "@/types";
 
 export async function getUsers() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN" && session?.user.role !== "MODERATOR") {
+  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
     throw new Error("Unauthorized");
   }
 
-  const users = await prisma.user.findMany({
+  const usersData = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
       name: true,
       email: true,
       role: true,
-      totalPoints: true,
       createdAt: true,
     },
   });
+
+  const pointsAggregates = await prisma.pointAssignment.groupBy({
+    by: ["userId"],
+    _sum: { points: true },
+  });
+  const userPointsMap = new Map<string, number>();
+  for (const agg of pointsAggregates) {
+    userPointsMap.set(agg.userId, agg._sum.points ?? 0);
+  }
+
+  const users = usersData.map((user) => ({
+    ...user,
+    role: user.role as Role,
+    totalPoints: userPointsMap.get(user.id) ?? 0,
+  }));
 
   return { users };
 }
@@ -37,7 +50,7 @@ export async function getUser(userId: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN" && session?.user.role !== "MODERATOR") {
+  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
     throw new Error("Unauthorized");
   }
 
@@ -48,7 +61,6 @@ export async function getUser(userId: string) {
       name: true,
       email: true,
       role: true,
-      totalPoints: true,
       createdAt: true,
     },
   });
@@ -57,7 +69,18 @@ export async function getUser(userId: string) {
     return { error: "User not found" };
   }
 
-  return { user };
+  const pointsAgg = await prisma.pointAssignment.aggregate({
+    where: { userId },
+    _sum: { points: true },
+  });
+
+  return {
+    user: {
+      ...user,
+      role: user.role as Role,
+      totalPoints: pointsAgg._sum.points ?? 0,
+    },
+  };
 }
 
 export async function updateUserRole(userId: string, role: Role) {
@@ -65,7 +88,7 @@ export async function updateUserRole(userId: string, role: Role) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     return { error: "Unauthorized" };
   }
 
@@ -91,7 +114,7 @@ export async function changeUserPassword(userId: string, newPassword: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     return { error: "Unauthorized" };
   }
 
@@ -119,7 +142,7 @@ export async function deleteUser(userId: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== "admin") {
     return { error: "Unauthorized" };
   }
 

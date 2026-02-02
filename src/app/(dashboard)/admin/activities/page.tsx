@@ -24,7 +24,7 @@ export default async function AdminActivitiesPage() {
     redirect("/login");
   }
 
-  if (session.user.role !== "ADMIN") {
+  if (session.user.role !== "admin") {
     redirect("/dashboard");
   }
 

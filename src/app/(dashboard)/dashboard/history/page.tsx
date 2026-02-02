@@ -15,7 +15,13 @@ import { prisma } from "@/lib/prisma";
 
 import { HistoryTable } from "./history-table";
 
-export default async function HistoryPage() {
+interface PageProps {
+  searchParams: Promise<{ termId?: string }>;
+}
+
+export default async function HistoryPage({ searchParams }: PageProps) {
+  const { termId } = await searchParams;
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -24,9 +30,29 @@ export default async function HistoryPage() {
     redirect("/login");
   }
 
+  let effectiveTermId = termId;
+  if (effectiveTermId === undefined) {
+    const activeTerm = await prisma.term.findFirst({
+      where: { isActive: true },
+    });
+
+    if (activeTerm === null) {
+      const latestTerm = await prisma.term.findFirst({
+        orderBy: { startDate: "desc" },
+      });
+      effectiveTermId = latestTerm?.id;
+    } else {
+      effectiveTermId = activeTerm.id;
+    }
+  }
+
+  const termFilter =
+    effectiveTermId === undefined ? undefined : { termId: effectiveTermId };
+
   const history = await prisma.pointAssignment.findMany({
     where: {
       userId: session.user.id,
+      ...termFilter,
     },
     orderBy: {
       createdAt: "desc",

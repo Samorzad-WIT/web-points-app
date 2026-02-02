@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
+import { getActiveTerm } from "@/actions/terms";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -20,9 +21,16 @@ export async function assignPoints(formData: {
     return { error: "Nie jesteś zalogowany" };
   }
 
-  const role = session.user.role ?? "USER";
-  if (role !== "MODERATOR" && role !== "ADMIN") {
+  const role = session.user.role ?? "user";
+  if (role !== "moderator" && role !== "admin") {
     return { error: "Brak uprawnień" };
+  }
+
+  const { term: activeTerm } = await getActiveTerm();
+  if (activeTerm === null) {
+    return {
+      error: "No active term. Please create and activate a term first.",
+    };
   }
 
   const { userId, activityId, points, notes } = formData;
@@ -57,17 +65,9 @@ export async function assignPoints(formData: {
       userId,
       activityId,
       assignedById: session.user.id,
+      termId: activeTerm.id,
       points,
       notes: notes ?? null,
-    },
-  });
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      totalPoints: {
-        increment: points,
-      },
     },
   });
 
