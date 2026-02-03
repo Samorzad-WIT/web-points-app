@@ -48,9 +48,9 @@ export function TermSelector() {
 
   if (terms.length === 0) {
     return (
-      <Button variant="outline" size="sm" disabled>
-        <Calendar className="mr-2 h-4 w-4" />
-        Brak semestrów
+      <Button variant="outline" size="sm" disabled className="min-w-0 shrink-1">
+        <Calendar />
+        <span className="min-w-0 truncate">Brak semestrów</span>
       </Button>
     );
   }
@@ -59,10 +59,12 @@ export function TermSelector() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="sm">
-            <Calendar className="mr-2 h-4 w-4" />
-            {selectedTerm?.name ?? "Wybierz semestr"}
-            <ChevronDown className="ml-2 h-4 w-4" />
+          <Button variant="outline" size="sm" className="min-w-0 shrink-1">
+            <Calendar />
+            <span className="min-w-0 truncate">
+              {selectedTerm?.name ?? "Wybierz semestr"}
+            </span>
+            <ChevronDown />
           </Button>
         }
       />
