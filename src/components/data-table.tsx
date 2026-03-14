@@ -14,7 +14,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Search,
+} from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -222,8 +229,7 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanPreviousPage()}
             >
               <span className="sr-only">Pierwsza strona</span>
-              <ChevronLeft className="size-4" />
-              <ChevronLeft className="size-4" />
+              <ChevronsLeft />
             </Button>
             <Button
               variant="outline"
@@ -234,7 +240,7 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanPreviousPage()}
             >
               <span className="sr-only">Poprzednia strona</span>
-              <ChevronLeft className="size-4" />
+              <ChevronLeft />
             </Button>
             <Button
               variant="outline"
@@ -245,7 +251,7 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanNextPage()}
             >
               <span className="sr-only">Następna strona</span>
-              <ChevronRight className="size-4" />
+              <ChevronRight />
             </Button>
             <Button
               variant="outline"
@@ -256,8 +262,7 @@ export function DataTable<TData, TValue>({
               disabled={!table.getCanNextPage()}
             >
               <span className="sr-only">Ostatnia strona</span>
-              <ChevronRight className="size-4" />
-              <ChevronRight className="size-4" />
+              <ChevronsRight />
             </Button>
           </div>
         </div>
