@@ -177,106 +177,100 @@ export function UsersTable({
     },
   ];
 
-  if (!readonly) {
-    columns.push({
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const user = row.original;
-        const isCurrent = user.id === currentUserId;
-        const isAdmin = currentUserRole === "admin";
+  columns.push({
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const user = row.original;
+      const isCurrent = user.id === currentUserId;
+      const isAdmin = currentUserRole === "admin";
 
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  className="size-8 p-0"
-                  disabled={isLoading === user.id}
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                className="size-8 p-0"
+                disabled={isLoading === user.id}
+              >
+                {isLoading === user.id ? (
+                  <Spinner className="size-4" />
+                ) : (
+                  <MoreHorizontal className="size-4" />
+                )}
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-full">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Akcje</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link
+                  href={`/admin/users/${user.id}`}
+                  className="flex w-full items-center"
                 >
-                  {isLoading === user.id ? (
-                    <Spinner className="size-4" />
-                  ) : (
-                    <MoreHorizontal className="size-4" />
-                  )}
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end" className="w-full">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Akcje</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Link
-                    href={`/admin/users/${user.id}`}
-                    className="flex w-full items-center"
-                  >
-                    <Eye className="mr-2 size-4" />
-                    Szczegóły
-                  </Link>
-                </DropdownMenuItem>
+                  <Eye className="mr-2 size-4" />
+                  Szczegóły
+                </Link>
+              </DropdownMenuItem>
 
-                {isAdmin ? (
-                  <>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
+              {!readonly && isAdmin ? (
+                <>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Shield className="mr-2 size-4" />
+                      Zmień rolę
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem
+                        onClick={async () => handleRoleChange(user.id, "user")}
+                        disabled={user.role === "user"}
+                      >
+                        <UserIcon className="mr-2 size-4" />
+                        Użytkownik
+                        {user.role === "user" ? " (Obecna)" : null}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={async () =>
+                          handleRoleChange(user.id, "moderator")
+                        }
+                        disabled={user.role === "moderator"}
+                      >
+                        <GraduationCap className="mr-2 size-4" />
+                        Moderator
+                        {user.role === "moderator" ? " (Obecna)" : null}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={async () => handleRoleChange(user.id, "admin")}
+                        disabled={user.role === "admin"}
+                      >
                         <Shield className="mr-2 size-4" />
-                        Zmień rolę
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem
-                          onClick={async () =>
-                            handleRoleChange(user.id, "user")
-                          }
-                          disabled={user.role === "user"}
-                        >
-                          <UserIcon className="mr-2 size-4" />
-                          Użytkownik
-                          {user.role === "user" && " (Obecna)"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={async () =>
-                            handleRoleChange(user.id, "moderator")
-                          }
-                          disabled={user.role === "moderator"}
-                        >
-                          <GraduationCap className="mr-2 size-4" />
-                          Moderator
-                          {user.role === "moderator" && " (Obecna)"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={async () =>
-                            handleRoleChange(user.id, "admin")
-                          }
-                          disabled={user.role === "admin"}
-                        >
-                          <Shield className="mr-2 size-4" />
-                          Admin
-                          {user.role === "admin" && " (Obecna)"}
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => {
-                        setUserToDelete(user);
-                      }}
-                      disabled={isCurrent}
-                    >
-                      <Trash className="mr-2 size-4" />
-                      Usuń użytkownika
-                    </DropdownMenuItem>
-                  </>
-                ) : null}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    });
-  }
+                        Admin
+                        {user.role === "admin" ? " (Obecna)" : null}
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => {
+                      setUserToDelete(user);
+                    }}
+                    disabled={isCurrent}
+                  >
+                    <Trash className="mr-2 size-4" />
+                    Usuń użytkownika
+                  </DropdownMenuItem>
+                </>
+              ) : null}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  });
 
   return (
     <>

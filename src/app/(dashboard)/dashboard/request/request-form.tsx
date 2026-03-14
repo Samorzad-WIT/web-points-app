@@ -78,7 +78,6 @@ export function RequestForm({ activities }: { activities: Activity[] }) {
       setActivityId(null);
       setPoints("");
       setNotes("");
-      router.push("/dashboard/requests");
     }
   }, [state, router]);
 

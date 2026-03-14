@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import { Check, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -108,8 +109,13 @@ export function RequestsQueue({ requests, currentUserId }: RequestsQueueProps) {
         {requests.map((request) => (
           <TableRow key={request.id}>
             <TableCell>
-              <div>
-                <div className="font-medium">{request.user.name}</div>
+              <div className="flex flex-col">
+                <Link
+                  href={`/admin/users/${request.user.id}`}
+                  className="w-fit font-medium hover:underline"
+                >
+                  {request.user.name}
+                </Link>
                 <div className="text-muted-foreground text-xs">
                   {request.user.email}
                 </div>

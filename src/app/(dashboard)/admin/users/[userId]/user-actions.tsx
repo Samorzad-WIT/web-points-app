@@ -4,6 +4,7 @@ import {
   GraduationCap,
   Key,
   MoreVertical,
+  Pencil,
   Shield,
   Trash,
   User as UserIcon,
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 import {
   changeUserPassword,
   deleteUser,
+  updateUserName,
   updateUserRole,
 } from "@/actions/users";
 import {
@@ -75,7 +77,9 @@ export function UserActions({
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showEditNameDialog, setShowEditNameDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [newName, setNewName] = useState(user.name ?? "");
 
   const handleRoleChange = async (newRole: "user" | "moderator" | "admin") => {
     setIsLoading(true);
@@ -134,12 +138,31 @@ export function UserActions({
     }
   };
 
+  const handleEditName = async () => {
+    if (!newName.trim()) {
+      toast.error("Nazwa nie może być pusta");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await updateUserName(user.id, newName.trim());
+      if (result.error === undefined) {
+        toast.success("Dane użytkownika zostały zaktualizowane");
+        setShowEditNameDialog(false);
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    } catch {
+      toast.error("Wystąpił błąd");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const isCurrent = user.id === currentUserId;
   const isAdmin = currentUserRole === "admin";
-
-  if (!isAdmin) {
-    return null;
-  }
 
   return (
     <>
@@ -160,57 +183,70 @@ export function UserActions({
           <DropdownMenuGroup>
             <DropdownMenuLabel>Zarządzaj użytkownikiem</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Shield className="mr-2 size-4" />
-                Zmień rolę
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem
-                  onClick={async () => handleRoleChange("user")}
-                  disabled={user.role === "user"}
-                >
-                  <UserIcon className="mr-2 size-4" />
-                  Użytkownik
-                  {user.role === "user" && " (Obecna)"}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => handleRoleChange("moderator")}
-                  disabled={user.role === "moderator"}
-                >
-                  <GraduationCap className="mr-2 size-4" />
-                  Moderator
-                  {user.role === "moderator" && " (Obecna)"}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => handleRoleChange("admin")}
-                  disabled={user.role === "admin"}
-                >
-                  <Shield className="mr-2 size-4" />
-                  Admin
-                  {user.role === "admin" && " (Obecna)"}
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
             <DropdownMenuItem
               onClick={() => {
-                setShowPasswordDialog(true);
+                setShowEditNameDialog(true);
               }}
             >
-              <Key className="mr-2 size-4" />
-              Zmień hasło
+              <Pencil className="mr-2 size-4" />
+              Edytuj dane
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => {
-                setShowDeleteDialog(true);
-              }}
-              disabled={isCurrent}
-            >
-              <Trash className="mr-2 size-4" />
-              Usuń użytkownika
-            </DropdownMenuItem>
+
+            {isAdmin ? (
+              <>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Shield className="mr-2 size-4" />
+                    Zmień rolę
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onClick={async () => handleRoleChange("user")}
+                      disabled={user.role === "user"}
+                    >
+                      <UserIcon className="mr-2 size-4" />
+                      Użytkownik
+                      {user.role === "user" && " (Obecna)"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () => handleRoleChange("moderator")}
+                      disabled={user.role === "moderator"}
+                    >
+                      <GraduationCap className="mr-2 size-4" />
+                      Moderator
+                      {user.role === "moderator" && " (Obecna)"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () => handleRoleChange("admin")}
+                      disabled={user.role === "admin"}
+                    >
+                      <Shield className="mr-2 size-4" />
+                      Admin
+                      {user.role === "admin" && " (Obecna)"}
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setShowPasswordDialog(true);
+                  }}
+                >
+                  <Key className="mr-2 size-4" />
+                  Zmień hasło
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => {
+                    setShowDeleteDialog(true);
+                  }}
+                  disabled={isCurrent}
+                >
+                  <Trash className="mr-2 size-4" />
+                  Usuń użytkownika
+                </DropdownMenuItem>
+              </>
+            ) : null}
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -270,6 +306,44 @@ export function UserActions({
               Anuluj
             </Button>
             <Button onClick={handleChangePassword} disabled={isLoading}>
+              {isLoading ? <Spinner className="mr-2 size-4" /> : null}
+              Zapisz
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEditNameDialog} onOpenChange={setShowEditNameDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edytuj dane użytkownika</DialogTitle>
+            <DialogDescription>
+              Zmień imię i nazwisko użytkownika.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Imię i nazwisko</Label>
+              <Input
+                id="name"
+                value={newName}
+                onChange={(event) => {
+                  setNewName(event.target.value);
+                }}
+                placeholder="Jan Kowalski"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowEditNameDialog(false);
+              }}
+            >
+              Anuluj
+            </Button>
+            <Button onClick={handleEditName} disabled={isLoading}>
               {isLoading ? <Spinner className="mr-2 size-4" /> : null}
               Zapisz
             </Button>

@@ -56,7 +56,7 @@ export async function getUserPointAssignments(userId: string, termId?: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
     throw new Error("Unauthorized");
   }
 

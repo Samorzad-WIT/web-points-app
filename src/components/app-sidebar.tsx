@@ -41,6 +41,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { authClient, useSession } from "@/lib/auth-client";
 
@@ -89,6 +90,7 @@ const handleSignOut = async () => {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { setOpenMobile } = useSidebar();
 
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */
   const role = (session?.user as any)?.role as string | undefined;
@@ -134,7 +136,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuButton
                     isActive={pathname === item.url}
                     render={
-                      <Link href={item.url}>
+                      <Link
+                        href={item.url}
+                        onClick={() => {
+                          setOpenMobile(false);
+                        }}
+                      >
                         <item.icon className="size-4" />
                         <span>{item.title}</span>
                       </Link>
@@ -156,7 +163,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuButton
                       isActive={pathname === item.url}
                       render={
-                        <Link href={item.url}>
+                        <Link
+                          href={item.url}
+                          onClick={() => {
+                            setOpenMobile(false);
+                          }}
+                        >
                           <item.icon className="size-4" />
                           <span>{item.title}</span>
                         </Link>
@@ -179,7 +191,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuButton
                       isActive={pathname === item.url}
                       render={
-                        <Link href={item.url}>
+                        <Link
+                          href={item.url}
+                          onClick={() => {
+                            setOpenMobile(false);
+                          }}
+                        >
                           <item.icon className="size-4" />
                           <span>{item.title}</span>
                         </Link>

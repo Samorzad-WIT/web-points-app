@@ -70,6 +70,7 @@ export default async function MyRequestsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Aktywność</TableHead>
+                  <TableHead>Notatka</TableHead>
                   <TableHead>Punkty</TableHead>
                   <TableHead>Semestr</TableHead>
                   <TableHead>Status</TableHead>
@@ -81,6 +82,9 @@ export default async function MyRequestsPage() {
                   <TableRow key={request.id}>
                     <TableCell className="font-medium">
                       {request.activity.name}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate">
+                      {request.notes ?? "-"}
                     </TableCell>
                     <TableCell>{request.points}</TableCell>
                     <TableCell>{request.term.name}</TableCell>

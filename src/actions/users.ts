@@ -161,3 +161,26 @@ export async function deleteUser(userId: string) {
     return { error: "Failed to delete user" };
   }
 }
+
+export async function updateUserName(userId: string, newName: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
+    return { error: "Unauthorized" };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { name: newName },
+    });
+
+    revalidatePath("/admin/users");
+    revalidatePath(`/admin/users/${userId}`);
+    return { success: true };
+  } catch {
+    return { error: "Failed to update user name" };
+  }
+}
