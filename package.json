@@ -61,7 +61,7 @@
     "@commitlint/cli": "^20.3.0",
     "@next/eslint-plugin-next": "^16.1.1",
     "@prisma/client": "^7.2.0",
-    "@solvro/config": "^2.0.7",
+    "@solvro/config": "^2.3.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.27",
     "@types/pg": "^8.16.0",
