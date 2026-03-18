@@ -6,6 +6,7 @@ import {
   ChartPie,
   ChevronDown,
   ClipboardList,
+  Crown,
   FileText,
   History,
   Home,
@@ -77,6 +78,12 @@ const adminNavItems = [
   { title: "Semestry", url: "/admin/terms", icon: Calendar },
 ];
 
+const superAdminNavItems = [
+  { title: "Panel Super Admina", url: "/super-admin", icon: Crown },
+  { title: "Wszyscy użytkownicy", url: "/super-admin/users", icon: Users },
+  { title: "Przydziel punkty", url: "/super-admin/assign", icon: Award },
+];
+
 const handleSignOut = async () => {
   await authClient.signOut({
     fetchOptions: {
@@ -94,8 +101,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */
   const role = (session?.user as any)?.role as string | undefined;
-  const isModerator = role === "moderator" || role === "admin";
-  const isAdmin = role === "admin";
+  const isModerator = role === "moderator" || role === "admin" || role === "super_admin";
+  const isAdmin = role === "admin" || role === "super_admin";
+  const isSuperAdminRole = role === "super_admin";
 
   return (
     <Sidebar {...props}>
@@ -187,6 +195,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminNavItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      isActive={pathname === item.url}
+                      render={
+                        <Link
+                          href={item.url}
+                          onClick={() => {
+                            setOpenMobile(false);
+                          }}
+                        >
+                          <item.icon className="size-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      }
+                    />
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
+        {isSuperAdminRole ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Super Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {superAdminNavItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       isActive={pathname === item.url}

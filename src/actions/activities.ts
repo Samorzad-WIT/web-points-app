@@ -5,8 +5,13 @@ import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/super-admin";
 
 type ActivityType = "FIXED" | "RANGE";
+
+function hasAdminAccess(email: string, role: string): boolean {
+  return role === "admin" || isSuperAdmin(email, role);
+}
 
 export async function getActiveActivities() {
   const activities = await prisma.activity.findMany({
@@ -29,7 +34,7 @@ export async function createActivity(formData: {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (!hasAdminAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     return { error: "Brak uprawnień" };
   }
 
@@ -89,7 +94,7 @@ export async function updateActivity(
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (!hasAdminAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     return { error: "Brak uprawnień" };
   }
 
@@ -125,7 +130,7 @@ export async function getActivity(id: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (!hasAdminAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     throw new Error("Unauthorized");
   }
 
@@ -150,7 +155,7 @@ export async function toggleActivity(id: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (!hasAdminAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     return { error: "Brak uprawnień" };
   }
 
@@ -173,7 +178,7 @@ export async function deleteActivity(id: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (!hasAdminAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     return { error: "Brak uprawnień" };
   }
 

@@ -30,7 +30,8 @@ export default async function UserDetailsPage({ params }: PageProps) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
+  const role = session?.user.role ?? "";
+  if (role !== "admin" && role !== "moderator" && role !== "super_admin") {
     return notFound();
   }
 

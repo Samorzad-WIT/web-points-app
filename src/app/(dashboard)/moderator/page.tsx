@@ -42,7 +42,7 @@ export default async function ModeratorPage({ searchParams }: PageProps) {
   }
 
   const role = session.user.role ?? "user";
-  if (role !== "moderator" && role !== "admin") {
+  if (role !== "moderator" && role !== "admin" && role !== "super_admin") {
     redirect("/dashboard");
   }
 

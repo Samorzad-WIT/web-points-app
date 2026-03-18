@@ -18,7 +18,7 @@ export default async function AssignPointsPage() {
   }
 
   const role = session.user.role ?? "user";
-  if (role !== "moderator" && role !== "admin") {
+  if (role !== "moderator" && role !== "admin" && role !== "super_admin") {
     redirect("/dashboard");
   }
 

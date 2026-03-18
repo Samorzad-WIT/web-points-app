@@ -5,13 +5,22 @@ import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin } from "@/lib/super-admin";
+
+function hasAdminAccess(email: string, role: string): boolean {
+  return role === "admin" || isSuperAdmin(email, role);
+}
+
+function hasModeratorAccess(email: string, role: string): boolean {
+  return role === "moderator" || hasAdminAccess(email, role);
+}
 
 export async function getPointAssignments(termId?: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (!hasAdminAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     throw new Error("Unauthorized");
   }
 
@@ -56,7 +65,7 @@ export async function getUserPointAssignments(userId: string, termId?: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
+  if (!hasModeratorAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     throw new Error("Unauthorized");
   }
 
@@ -106,7 +115,7 @@ export async function getActivityPointAssignments(activityId: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (!hasAdminAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     throw new Error("Unauthorized");
   }
 
@@ -145,7 +154,7 @@ export async function deletePointAssignment(assignmentId: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  if (!hasAdminAccess(session?.user.email ?? "", session?.user.role ?? "")) {
     return { error: "Unauthorized" };
   }
 

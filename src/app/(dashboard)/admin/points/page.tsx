@@ -27,7 +27,8 @@ export default async function AdminPointsPage({ searchParams }: PageProps) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin") {
+  const role = session?.user.role ?? "";
+  if (role !== "admin" && role !== "super_admin") {
     redirect("/dashboard");
   }
 

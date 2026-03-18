@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { getActiveTerm } from "@/actions/terms";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin, syncSuperAdminRole } from "@/lib/super-admin";
 
 export async function assignPoints(formData: {
   userId: string;
@@ -22,8 +23,15 @@ export async function assignPoints(formData: {
   }
 
   const role = session.user.role ?? "user";
-  if (role !== "moderator" && role !== "admin") {
+  const email = session.user.email ?? "";
+  const callerIsSuperAdmin = isSuperAdmin(email, role);
+
+  if (!callerIsSuperAdmin && role !== "moderator" && role !== "admin") {
     return { error: "Brak uprawnień" };
+  }
+
+  if (callerIsSuperAdmin) {
+    await syncSuperAdminRole(session.user.id, email, role);
   }
 
   const { term: activeTerm } = await getActiveTerm();

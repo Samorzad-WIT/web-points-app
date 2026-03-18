@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdmin, syncSuperAdminRole } from "@/lib/super-admin";
 import type { Role } from "@/types";
 
 export async function getUsers() {
@@ -16,7 +17,9 @@ export async function getUsers() {
     throw new Error("Unauthorized");
   }
 
+  // Super admins are hidden from admins and moderators
   const usersData = await prisma.user.findMany({
+    where: { role: { not: "super_admin" } },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -69,6 +72,11 @@ export async function getUser(userId: string) {
     return { error: "User not found" };
   }
 
+  // Super admin users are invisible to lower roles
+  if (user.role === "super_admin") {
+    return { error: "User not found" };
+  }
+
   const pointsAgg = await prisma.pointAssignment.aggregate({
     where: { userId },
     _sum: { points: true },
@@ -96,6 +104,20 @@ export async function updateUserRole(userId: string, role: Role) {
     return { error: "You cannot change your own role" };
   }
 
+  // Admins cannot set the super_admin role
+  if (role === "super_admin") {
+    return { error: "Unauthorized" };
+  }
+
+  // Admins cannot change the role of a super_admin
+  const targetUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (targetUser?.role === "super_admin") {
+    return { error: "Unauthorized" };
+  }
+
   try {
     await prisma.user.update({
       where: { id: userId },
@@ -120,6 +142,15 @@ export async function changeUserPassword(userId: string, newPassword: string) {
 
   if (newPassword.length < 6) {
     return { error: "Hasło musi mieć co najmniej 6 znaków" };
+  }
+
+  // Admins cannot change password of a super_admin
+  const targetUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (targetUser?.role === "super_admin") {
+    return { error: "Unauthorized" };
   }
 
   try {
@@ -150,6 +181,15 @@ export async function deleteUser(userId: string) {
     return { error: "You cannot delete your own account" };
   }
 
+  // Admins cannot delete a super_admin
+  const targetUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (targetUser?.role === "super_admin") {
+    return { error: "Unauthorized" };
+  }
+
   try {
     await prisma.user.delete({
       where: { id: userId },
@@ -167,8 +207,29 @@ export async function updateUserName(userId: string, newName: string) {
     headers: await headers(),
   });
 
-  if (session?.user.role !== "admin" && session?.user.role !== "moderator") {
+  const callerRole = session?.user.role ?? "";
+  const callerEmail = session?.user.email ?? "";
+
+  const callerIsSuperAdmin = isSuperAdmin(callerEmail, callerRole);
+
+  if (!callerIsSuperAdmin && callerRole !== "admin" && callerRole !== "moderator") {
     return { error: "Unauthorized" };
+  }
+
+  // Sync super_admin role to DB if needed
+  if (callerIsSuperAdmin && session) {
+    await syncSuperAdminRole(session.user.id, callerEmail, callerRole);
+  }
+
+  // Non-super-admins cannot edit super_admin users
+  if (!callerIsSuperAdmin) {
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    if (targetUser?.role === "super_admin") {
+      return { error: "Unauthorized" };
+    }
   }
 
   try {
@@ -179,6 +240,7 @@ export async function updateUserName(userId: string, newName: string) {
 
     revalidatePath("/admin/users");
     revalidatePath(`/admin/users/${userId}`);
+    revalidatePath("/super-admin/users");
     return { success: true };
   } catch {
     return { error: "Failed to update user name" };
