@@ -11,6 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
   Table,
   TableBody,
   TableCell,
@@ -83,8 +88,25 @@ export default async function MyRequestsPage() {
                     <TableCell className="font-medium">
                       {request.activity.name}
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {request.notes ?? "-"}
+                    <TableCell className="max-w-[200px]">
+                      {request.notes === null || request.notes === "" ? (
+                        "-"
+                      ) : (
+                        <HoverCard>
+                          <HoverCardTrigger
+                            className="block w-full cursor-pointer truncate text-left"
+                            render={<button type="button" />}
+                          >
+                            {request.notes}
+                          </HoverCardTrigger>
+                          <HoverCardContent
+                            align="start"
+                            className="max-h-64 w-80 overflow-y-auto break-words whitespace-pre-wrap"
+                          >
+                            {request.notes}
+                          </HoverCardContent>
+                        </HoverCard>
+                      )}
                     </TableCell>
                     <TableCell>{request.points}</TableCell>
                     <TableCell>{request.term.name}</TableCell>

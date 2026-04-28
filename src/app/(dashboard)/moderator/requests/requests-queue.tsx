@@ -23,6 +23,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -146,8 +151,25 @@ export function RequestsQueue({ requests, currentUserId }: RequestsQueueProps) {
                 ) : null}
               </div>
             </TableCell>
-            <TableCell className="max-w-[200px] truncate">
-              {request.notes ?? "-"}
+            <TableCell className="max-w-[200px]">
+              {request.notes === null || request.notes === "" ? (
+                "-"
+              ) : (
+                <HoverCard>
+                  <HoverCardTrigger
+                    className="block w-full cursor-pointer truncate text-left"
+                    render={<button type="button" />}
+                  >
+                    {request.notes}
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    align="start"
+                    className="max-h-64 w-80 overflow-y-auto break-words whitespace-pre-wrap"
+                  >
+                    {request.notes}
+                  </HoverCardContent>
+                </HoverCard>
+              )}
             </TableCell>
             <TableCell>
               {format(new Date(request.createdAt), "d MMM yyyy", {
