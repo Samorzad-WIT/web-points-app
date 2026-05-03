@@ -11,6 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Table,
   TableBody,
   TableCell,
@@ -83,8 +88,26 @@ export default async function MyRequestsPage() {
                     <TableCell className="font-medium">
                       {request.activity.name}
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {request.notes ?? "-"}
+                    <TableCell className="max-w-[200px]">
+                      {request.notes === null || request.notes === "" ? (
+                        "-"
+                      ) : (
+                        <Popover>
+                          <PopoverTrigger
+                            openOnHover
+                            closeDelay={150}
+                            className="block w-full cursor-pointer truncate text-left"
+                          >
+                            {request.notes}
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="start"
+                            className="max-h-64 w-80 overflow-y-auto break-words whitespace-pre-wrap"
+                          >
+                            {request.notes}
+                          </PopoverContent>
+                        </Popover>
+                      )}
                     </TableCell>
                     <TableCell>{request.points}</TableCell>
                     <TableCell>{request.term.name}</TableCell>

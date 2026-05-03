@@ -26,6 +26,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Table,
   TableBody,
   TableCell,
@@ -146,8 +151,26 @@ export function RequestsQueue({ requests, currentUserId }: RequestsQueueProps) {
                 ) : null}
               </div>
             </TableCell>
-            <TableCell className="max-w-[200px] truncate">
-              {request.notes ?? "-"}
+            <TableCell className="max-w-[200px]">
+              {request.notes === null || request.notes === "" ? (
+                "-"
+              ) : (
+                <Popover>
+                  <PopoverTrigger
+                    openOnHover
+                    closeDelay={150}
+                    className="block w-full cursor-pointer truncate text-left"
+                  >
+                    {request.notes}
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    className="max-h-64 w-80 overflow-y-auto break-words whitespace-pre-wrap"
+                  >
+                    {request.notes}
+                  </PopoverContent>
+                </Popover>
+              )}
             </TableCell>
             <TableCell>
               {format(new Date(request.createdAt), "d MMM yyyy", {
