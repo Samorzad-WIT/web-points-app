@@ -45,3 +45,13 @@ next-env.d.ts
 /generated/prisma
 !/.env.example
 .eslintcache
+
+# ide & editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# scratch
+scratch/
+
