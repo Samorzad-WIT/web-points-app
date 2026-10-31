@@ -38,12 +38,14 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { authClient, useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 import Logo from "../../public/logo.svg";
 
@@ -87,7 +89,14 @@ const handleSignOut = async () => {
   });
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  pendingRequestsCount?: number;
+}
+
+export function AppSidebar({
+  pendingRequestsCount = 0,
+  ...props
+}: AppSidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { setOpenMobile } = useSidebar();
@@ -158,24 +167,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel>Moderator</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {moderatorNavItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      isActive={pathname === item.url}
-                      render={
-                        <Link
-                          href={item.url}
-                          onClick={() => {
-                            setOpenMobile(false);
-                          }}
-                        >
-                          <item.icon className="size-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
-                ))}
+                {moderatorNavItems.map((item) => {
+                  const isPendingItem =
+                    item.url === "/moderator/requests" &&
+                    pendingRequestsCount > 0;
+
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        isActive={pathname === item.url}
+                        className={cn(
+                          isPendingItem &&
+                            "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20 hover:text-destructive border pr-9 font-medium",
+                        )}
+                        render={
+                          <Link
+                            href={item.url}
+                            onClick={() => {
+                              setOpenMobile(false);
+                            }}
+                          >
+                            <item.icon className="size-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        }
+                      />
+                      {isPendingItem ? (
+                        <SidebarMenuBadge className="border-destructive min-w-5 border bg-transparent px-1.5 text-black dark:text-white">
+                          {pendingRequestsCount}
+                        </SidebarMenuBadge>
+                      ) : null}
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

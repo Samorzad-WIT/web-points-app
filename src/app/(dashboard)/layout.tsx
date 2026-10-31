@@ -21,6 +21,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardLayout({
   children,
@@ -44,10 +45,18 @@ export default async function DashboardLayout({
     isActive: t.isActive,
   }));
 
+  const isModerator =
+    session.user.role === "moderator" || session.user.role === "admin";
+  const pendingRequestsCount = isModerator
+    ? await prisma.pointRequest.count({
+        where: { status: "PENDING" },
+      })
+    : 0;
+
   return (
     <TermProvider initialTerms={initialTerms}>
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar pendingRequestsCount={pendingRequestsCount} />
         <SidebarInset>
           <header className="flex h-16 items-center justify-between gap-2 border-b px-4">
             <div className="flex items-center gap-2">
