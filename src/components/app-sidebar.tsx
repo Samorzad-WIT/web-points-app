@@ -168,17 +168,17 @@ export function AppSidebar({
             <SidebarGroupContent>
               <SidebarMenu>
                 {moderatorNavItems.map((item) => {
-                  const isPendingItem =
-                    item.url === "/moderator/requests" &&
-                    pendingRequestsCount > 0;
+                  const isRequestsItem = item.url === "/moderator/requests";
+                  const hasPending = isRequestsItem && pendingRequestsCount > 0;
 
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         isActive={pathname === item.url}
                         className={cn(
-                          isPendingItem &&
-                            "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20 hover:text-destructive border pr-9 font-medium",
+                          isRequestsItem && "pr-9",
+                          hasPending &&
+                            "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20 hover:text-destructive border font-medium",
                         )}
                         render={
                           <Link
@@ -192,9 +192,18 @@ export function AppSidebar({
                           </Link>
                         }
                       />
-                      {isPendingItem ? (
-                        <SidebarMenuBadge className="border-destructive min-w-5 border bg-transparent px-1.5 text-black dark:text-white">
-                          {pendingRequestsCount}
+                      {isRequestsItem ? (
+                        <SidebarMenuBadge
+                          className={cn(
+                            "min-w-5 rounded-full px-1.5",
+                            hasPending
+                              ? "bg-destructive text-destructive-foreground font-semibold"
+                              : "bg-muted text-muted-foreground font-medium",
+                          )}
+                        >
+                          {pendingRequestsCount > 99
+                            ? "99+"
+                            : pendingRequestsCount}
                         </SidebarMenuBadge>
                       ) : null}
                     </SidebarMenuItem>

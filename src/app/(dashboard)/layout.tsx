@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { getPendingPointRequestsCount } from "@/actions/point-requests";
 import { getTerms } from "@/actions/terms";
 import { AppSidebar } from "@/components/app-sidebar";
 import { HistoricTermBanner } from "@/components/historic-term-banner";
@@ -21,7 +22,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 
 export default async function DashboardLayout({
   children,
@@ -45,13 +45,7 @@ export default async function DashboardLayout({
     isActive: t.isActive,
   }));
 
-  const isModerator =
-    session.user.role === "moderator" || session.user.role === "admin";
-  const pendingRequestsCount = isModerator
-    ? await prisma.pointRequest.count({
-        where: { status: "PENDING" },
-      })
-    : 0;
+  const pendingRequestsCount = await getPendingPointRequestsCount();
 
   return (
     <TermProvider initialTerms={initialTerms}>
