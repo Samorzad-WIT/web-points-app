@@ -65,6 +65,8 @@ export async function createPointRequest(data: {
   });
 
   revalidatePath("/dashboard/requests");
+  revalidatePath("/moderator/requests");
+  revalidatePath("/(dashboard)", "layout");
 
   return { request };
 }
@@ -171,6 +173,7 @@ export async function approvePointRequest(
 
   revalidatePath("/moderator/requests");
   revalidatePath("/dashboard/ranking");
+  revalidatePath("/(dashboard)", "layout");
 
   return { success: true };
 }
@@ -214,6 +217,26 @@ export async function rejectPointRequest(
   });
 
   revalidatePath("/moderator/requests");
+  revalidatePath("/(dashboard)", "layout");
 
   return { success: true };
+}
+
+export async function getPendingPointRequestsCount() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session === null) {
+    return 0;
+  }
+
+  const role = session.user.role ?? "user";
+  if (role !== "moderator" && role !== "admin") {
+    return 0;
+  }
+
+  return prisma.pointRequest.count({
+    where: { status: "PENDING" },
+  });
 }

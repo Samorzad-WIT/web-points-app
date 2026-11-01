@@ -23,7 +23,8 @@ interface PointAssignment {
 
 export const columns: ColumnDef<PointAssignment>[] = [
   {
-    accessorKey: "activity.name",
+    id: "activity",
+    accessorFn: (row) => row.activity.name,
     header: "Aktywność",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.activity.name}</span>
@@ -86,7 +87,7 @@ export function HistoryTable({ data }: HistoryTableProps) {
     <DataTable
       columns={columns}
       data={data}
-      searchKey="activity.name"
+      searchKey="activity"
       searchPlaceholder="Szukaj aktywności..."
     />
   );

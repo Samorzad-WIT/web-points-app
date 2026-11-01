@@ -38,12 +38,14 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { authClient, useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 import Logo from "../../public/logo.svg";
 
@@ -87,7 +89,14 @@ const handleSignOut = async () => {
   });
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  pendingRequestsCount?: number;
+}
+
+export function AppSidebar({
+  pendingRequestsCount = 0,
+  ...props
+}: AppSidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { setOpenMobile } = useSidebar();
@@ -158,24 +167,48 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel>Moderator</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {moderatorNavItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      isActive={pathname === item.url}
-                      render={
-                        <Link
-                          href={item.url}
-                          onClick={() => {
-                            setOpenMobile(false);
-                          }}
+                {moderatorNavItems.map((item) => {
+                  const isRequestsItem = item.url === "/moderator/requests";
+                  const hasPending = isRequestsItem && pendingRequestsCount > 0;
+
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        isActive={pathname === item.url}
+                        className={cn(
+                          isRequestsItem && "pr-9",
+                          hasPending &&
+                            "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20 hover:text-destructive border font-medium",
+                        )}
+                        render={
+                          <Link
+                            href={item.url}
+                            onClick={() => {
+                              setOpenMobile(false);
+                            }}
+                          >
+                            <item.icon className="size-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        }
+                      />
+                      {isRequestsItem ? (
+                        <SidebarMenuBadge
+                          className={cn(
+                            "min-w-5 rounded-full px-1.5",
+                            hasPending
+                              ? "bg-destructive text-destructive-foreground font-semibold"
+                              : "bg-muted text-muted-foreground font-medium",
+                          )}
                         >
-                          <item.icon className="size-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
-                ))}
+                          {pendingRequestsCount > 99
+                            ? "99+"
+                            : pendingRequestsCount}
+                        </SidebarMenuBadge>
+                      ) : null}
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

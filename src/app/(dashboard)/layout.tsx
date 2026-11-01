@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { getPendingPointRequestsCount } from "@/actions/point-requests";
 import { getTerms } from "@/actions/terms";
 import { AppSidebar } from "@/components/app-sidebar";
 import { HistoricTermBanner } from "@/components/historic-term-banner";
@@ -44,10 +45,12 @@ export default async function DashboardLayout({
     isActive: t.isActive,
   }));
 
+  const pendingRequestsCount = await getPendingPointRequestsCount();
+
   return (
     <TermProvider initialTerms={initialTerms}>
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar pendingRequestsCount={pendingRequestsCount} />
         <SidebarInset>
           <header className="flex h-16 items-center justify-between gap-2 border-b px-4">
             <div className="flex items-center gap-2">
