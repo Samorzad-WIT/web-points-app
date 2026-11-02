@@ -58,7 +58,7 @@ interface RequestsQueueProps {
 export function RequestsQueue({ requests, currentUserId }: RequestsQueueProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [rejectNote, setRejectNote] = useState("");
+  const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
   const [modifyPoints, setModifyPoints] = useState<Record<string, number>>({});
 
   const handleApprove = (requestId: string, originalPoints: number) => {
@@ -75,14 +75,16 @@ export function RequestsQueue({ requests, currentUserId }: RequestsQueueProps) {
   };
 
   const handleReject = (requestId: string) => {
+    const note = rejectNotes[requestId];
     startTransition(async () => {
-      const result = await rejectPointRequest(
-        requestId,
-        rejectNote || undefined,
-      );
+      const result = await rejectPointRequest(requestId, note || undefined);
       if (result.error === undefined) {
         toast.success("Zgłoszenie zostało odrzucone");
-        setRejectNote("");
+        setRejectNotes((previous) => {
+          const copy = { ...previous };
+          delete copy[requestId];
+          return copy;
+        });
         router.refresh();
       } else {
         toast.error(result.error);
@@ -228,9 +230,13 @@ export function RequestsQueue({ requests, currentUserId }: RequestsQueueProps) {
                       <Textarea
                         id="reject-note"
                         placeholder="Powód odrzucenia (opcjonalnie)"
-                        value={rejectNote}
+                        value={rejectNotes[request.id] ?? ""}
                         onChange={(event_) => {
-                          setRejectNote(event_.target.value);
+                          const value = event_.target.value;
+                          setRejectNotes((previous) => ({
+                            ...previous,
+                            [request.id]: value,
+                          }));
                         }}
                       />
                     </div>

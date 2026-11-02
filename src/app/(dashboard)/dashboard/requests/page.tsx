@@ -1,8 +1,4 @@
-import { format } from "date-fns";
-import { pl } from "date-fns/locale";
-
 import { getMyPointRequests } from "@/actions/point-requests";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -10,36 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
-function getStatusBadge(status: string) {
-  switch (status) {
-    case "PENDING": {
-      return <Badge variant="secondary">Oczekujące</Badge>;
-    }
-    case "APPROVED": {
-      return <Badge variant="default">Zatwierdzone</Badge>;
-    }
-    case "REJECTED": {
-      return <Badge variant="destructive">Odrzucone</Badge>;
-    }
-    default: {
-      return <Badge variant="outline">{status}</Badge>;
-    }
-  }
-}
+import { RequestsTable } from "./requests-table";
 
 export default async function MyRequestsPage() {
   const { requests, error } = await getMyPointRequests();
@@ -71,56 +39,7 @@ export default async function MyRequestsPage() {
               zgłoszenie punktów.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Aktywność</TableHead>
-                  <TableHead>Notatka</TableHead>
-                  <TableHead>Punkty</TableHead>
-                  <TableHead>Semestr</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Data</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {requests.map((request) => (
-                  <TableRow key={request.id}>
-                    <TableCell className="font-medium">
-                      {request.activity.name}
-                    </TableCell>
-                    <TableCell className="max-w-[200px]">
-                      {request.notes === null || request.notes === "" ? (
-                        "-"
-                      ) : (
-                        <Popover>
-                          <PopoverTrigger
-                            openOnHover
-                            closeDelay={150}
-                            className="block w-full cursor-pointer truncate text-left"
-                          >
-                            {request.notes}
-                          </PopoverTrigger>
-                          <PopoverContent
-                            align="start"
-                            className="max-h-64 w-80 overflow-y-auto break-words whitespace-pre-wrap"
-                          >
-                            {request.notes}
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                    </TableCell>
-                    <TableCell>{request.points}</TableCell>
-                    <TableCell>{request.term.name}</TableCell>
-                    <TableCell>{getStatusBadge(request.status)}</TableCell>
-                    <TableCell>
-                      {format(new Date(request.createdAt), "d MMM yyyy", {
-                        locale: pl,
-                      })}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <RequestsTable requests={requests} />
           )}
         </CardContent>
       </Card>

@@ -177,7 +177,7 @@ export async function approvePointRequest(
 
 export async function rejectPointRequest(
   requestId: string,
-  reviewNote?: string,
+  rejectionComment?: string,
 ) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -209,7 +209,7 @@ export async function rejectPointRequest(
     data: {
       status: "REJECTED",
       reviewedById: session.user.id,
-      reviewNote: reviewNote ?? null,
+      rejectionComment: rejectionComment ?? null,
     },
   });
 
