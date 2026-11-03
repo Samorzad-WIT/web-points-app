@@ -134,11 +134,11 @@ export function RequestsTable({ requests }: { requests: RequestItem[] }) {
       </Table>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md break-all whitespace-pre-wrap">
           <DialogHeader>
             <DialogTitle>Powód odrzucenia zgłoszenia</DialogTitle>
           </DialogHeader>
-          <div className="text-foreground py-4 text-sm whitespace-pre-wrap">
+          <div className="text-foreground py-4 text-sm break-all whitespace-pre-wrap">
             {selectedComment}
           </div>
           <DialogFooter>

@@ -75,7 +75,8 @@ export function RequestsQueue({ requests, currentUserId }: RequestsQueueProps) {
   };
 
   const handleReject = (requestId: string) => {
-    const note = rejectNotes[requestId];
+    const note = rejectNotes[requestId] ?? "";
+
     startTransition(async () => {
       const result = await rejectPointRequest(requestId, note || undefined);
       if (result.error === undefined) {
@@ -230,15 +231,22 @@ export function RequestsQueue({ requests, currentUserId }: RequestsQueueProps) {
                       <Textarea
                         id="reject-note"
                         placeholder="Powód odrzucenia (opcjonalnie)"
+                        maxLength={400}
+                        className="break-all"
                         value={rejectNotes[request.id] ?? ""}
                         onChange={(event_) => {
                           const value = event_.target.value;
-                          setRejectNotes((previous) => ({
-                            ...previous,
-                            [request.id]: value,
-                          }));
+                          if (value.length <= 400) {
+                            setRejectNotes((previous) => ({
+                              ...previous,
+                              [request.id]: value,
+                            }));
+                          }
                         }}
                       />
+                      <div className="text-muted-foreground text-right text-xs">
+                        {(rejectNotes[request.id] ?? "").length}/400
+                      </div>
                     </div>
                     <DialogFooter>
                       <DialogClose
