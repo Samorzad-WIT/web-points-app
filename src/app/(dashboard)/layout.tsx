@@ -36,7 +36,11 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const { terms: termsData } = await getTerms();
+  const [{ terms: termsData }, pendingRequestsCount] = await Promise.all([
+    getTerms(),
+    getPendingPointRequestsCount(session.user.role),
+  ]);
+
   const initialTerms: Term[] = termsData.map((t) => ({
     id: t.id,
     name: t.name,
@@ -44,8 +48,6 @@ export default async function DashboardLayout({
     endDate: new Date(t.endDate),
     isActive: t.isActive,
   }));
-
-  const pendingRequestsCount = await getPendingPointRequestsCount();
 
   return (
     <TermProvider initialTerms={initialTerms}>

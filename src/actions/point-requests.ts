@@ -65,7 +65,6 @@ export async function createPointRequest(data: {
   });
 
   revalidatePath("/dashboard/requests");
-  revalidatePath("/moderator/requests");
   revalidatePath("/(dashboard)", "layout");
 
   return { request };
@@ -102,7 +101,7 @@ export async function getPendingPointRequests() {
     return { error: "Musisz być zalogowany" };
   }
 
-  const role = session.user.role ?? "USER";
+  const role = session.user.role ?? "user";
   if (role !== "moderator" && role !== "admin") {
     return { error: "Brak uprawnień" };
   }
@@ -132,7 +131,7 @@ export async function approvePointRequest(
     return { error: "Musisz być zalogowany" };
   }
 
-  const role = session.user.role ?? "USER";
+  const role = session.user.role ?? "user";
   if (role !== "moderator" && role !== "admin") {
     return { error: "Brak uprawnień" };
   }
@@ -171,7 +170,6 @@ export async function approvePointRequest(
     },
   });
 
-  revalidatePath("/moderator/requests");
   revalidatePath("/dashboard/ranking");
   revalidatePath("/(dashboard)", "layout");
 
@@ -190,7 +188,7 @@ export async function rejectPointRequest(
     return { error: "Musisz być zalogowany" };
   }
 
-  const role = session.user.role ?? "USER";
+  const role = session.user.role ?? "user";
   if (role !== "moderator" && role !== "admin") {
     return { error: "Brak uprawnień" };
   }
@@ -216,27 +214,37 @@ export async function rejectPointRequest(
     },
   });
 
-  revalidatePath("/moderator/requests");
   revalidatePath("/(dashboard)", "layout");
 
   return { success: true };
 }
 
-export async function getPendingPointRequestsCount() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+export async function getPendingPointRequestsCount(role?: string | null) {
+  let userRole = role;
 
-  if (session === null) {
+  if (userRole === undefined) {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (session === null) {
+      return 0;
+    }
+
+    userRole = session.user.role;
+  }
+
+  const normalizedRole = userRole ?? "user";
+  if (normalizedRole !== "moderator" && normalizedRole !== "admin") {
     return 0;
   }
 
-  const role = session.user.role ?? "user";
-  if (role !== "moderator" && role !== "admin") {
+  try {
+    return await prisma.pointRequest.count({
+      where: { status: "PENDING" },
+    });
+  } catch (error) {
+    console.error("Nie udało się pobrać liczby oczekujących zgłoszeń:", error);
     return 0;
   }
-
-  return prisma.pointRequest.count({
-    where: { status: "PENDING" },
-  });
 }

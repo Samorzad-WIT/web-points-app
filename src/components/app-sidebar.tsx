@@ -19,7 +19,7 @@ import {
 import type { StaticImageData } from "next/image";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -64,6 +64,7 @@ const moderatorNavItems = [
     title: "Oczekujące zgłoszenia",
     url: "/moderator/requests",
     icon: FileText,
+    badgeKey: "pendingRequests",
   },
   { title: "Przydziel punkty", url: "/moderator/assign", icon: Award },
   { title: "Użytkownicy", url: "/moderator/users", icon: Users },
@@ -98,6 +99,7 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const { setOpenMobile } = useSidebar();
 
@@ -168,7 +170,8 @@ export function AppSidebar({
             <SidebarGroupContent>
               <SidebarMenu>
                 {moderatorNavItems.map((item) => {
-                  const isRequestsItem = item.url === "/moderator/requests";
+                  const isRequestsItem =
+                    "badgeKey" in item && item.badgeKey === "pendingRequests";
                   const hasPending = isRequestsItem && pendingRequestsCount > 0;
 
                   return (
@@ -178,13 +181,16 @@ export function AppSidebar({
                         className={cn(
                           isRequestsItem && "pr-9",
                           hasPending &&
-                            "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20 hover:text-destructive border font-medium",
+                            "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20 hover:text-destructive active:bg-destructive/20 active:text-destructive data-active:bg-destructive/20 data-active:text-destructive border font-medium",
                         )}
                         render={
                           <Link
                             href={item.url}
                             onClick={() => {
                               setOpenMobile(false);
+                              if (isRequestsItem) {
+                                router.refresh();
+                              }
                             }}
                           >
                             <item.icon className="size-4" />
@@ -197,7 +203,7 @@ export function AppSidebar({
                           className={cn(
                             "min-w-5 rounded-full px-1.5",
                             hasPending
-                              ? "bg-destructive text-destructive-foreground font-semibold"
+                              ? "bg-destructive font-semibold text-white"
                               : "bg-muted text-muted-foreground font-medium",
                           )}
                         >
