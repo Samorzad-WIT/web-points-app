@@ -43,6 +43,12 @@ function SubmitButton() {
 }
 
 export function RequestForm({ activities }: { activities: Activity[] }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const router = useRouter();
   const [activityId, setActivityId] = useState<string | null>(null);
   const [activityQuery, setActivityQuery] = useState("");
@@ -129,6 +135,10 @@ export function RequestForm({ activities }: { activities: Activity[] }) {
     });
   };
 
+  if (!isMounted) {
+    return null;
+  }
+
   if (isHistoricView) {
     return (
       <Alert
@@ -207,7 +217,7 @@ export function RequestForm({ activities }: { activities: Activity[] }) {
             <span className="text-foreground font-medium">
               {selectedActivity.type === "FIXED"
                 ? `Stała liczba punktów: ${String(selectedActivity.fixedPoints)}`
-                : `Liczba punktów: ${String(selectedActivity.minPoints)} - ${String(selectedActivity.maxPoints)}`}
+                : `Liczba punktów: ${String(selectedActivity.minPoints)}-${String(selectedActivity.maxPoints)}`}
             </span>
           </p>
         )}
@@ -251,16 +261,45 @@ export function RequestForm({ activities }: { activities: Activity[] }) {
 
       <div className="space-y-2">
         <Label htmlFor="notes">Opis (opcjonalnie)</Label>
-        <Textarea
-          id="notes"
-          placeholder="Opisz dlaczego zasługujesz na te punkty..."
-          value={notes}
-          onChange={(event) => {
-            setNotes(event.target.value);
-          }}
-          disabled={isPending}
-          rows={3}
-        />
+        <div className="w-full max-w-full overflow-hidden">
+          <Textarea
+            id="notes"
+            placeholder="Opisz dlaczego zasługujesz na te punkty..."
+            maxLength={500}
+            className="w-full resize-y break-all whitespace-pre-wrap"
+            style={{
+              wordBreak: "break-all",
+              overflowWrap: "anywhere",
+            }}
+            value={notes}
+            onChange={(event) => {
+              let value = event.target.value;
+
+              const rawLines = value.split("\n");
+              const processedLines = rawLines.map((line) => {
+                if (line.length > 200) {
+                  return (
+                    line.match(/.{1,200}/g)?.join("\n") ?? line.slice(0, 200)
+                  );
+                }
+                return line;
+              });
+
+              value = processedLines.join("\n");
+
+              if (value.length > 500) {
+                value = value.slice(0, 500);
+              }
+
+              setNotes(value);
+            }}
+            disabled={isPending}
+            rows={3}
+          />
+        </div>
+        <div className="text-muted-foreground text-right text-xs">
+          {notes.length}/500
+        </div>
       </div>
 
       <div className="flex gap-2">
