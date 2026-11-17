@@ -27,6 +27,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
 
 interface Assignment {
@@ -106,12 +111,24 @@ export function PointsTable({ assignments }: PointsTableProps) {
       cell: ({ row }) => {
         const assignment = row.original;
         return (
-          <div className="flex flex-col">
+          <div className="flex max-w-xs flex-col">
             <span className="font-medium">{assignment.activity.name}</span>
-            {assignment.notes === null ? null : (
-              <span className="text-muted-foreground line-clamp-1 text-xs">
-                {assignment.notes}
-              </span>
+            {assignment.notes === null || assignment.notes === "" ? null : (
+              <Popover>
+                <PopoverTrigger
+                  openOnHover
+                  closeDelay={150}
+                  className="text-muted-foreground block w-full cursor-pointer text-left text-xs"
+                >
+                  <span className="line-clamp-1">{assignment.notes}</span>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  className="max-h-64 w-80 overflow-y-auto break-words whitespace-pre-wrap"
+                >
+                  {assignment.notes}
+                </PopoverContent>
+              </Popover>
             )}
           </div>
         );
